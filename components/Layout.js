@@ -162,7 +162,7 @@ const Layout = ({ children }) => {
             {/* Approved buttons (unchanged) */}
             <h5 className="font-bold text-white w-full">QID_109</h5>
               <CopyToClipboard text="salary_slip" onCopy={handleCopy}>
-                <Button className="gap-2 text-medium" >salary_slip</Button>
+                <Button className="gap-2 " >salary_slip</Button>
               </CopyToClipboard>
               <CopyToClipboard text="bank_narration" onCopy={handleCopy}>
                 <Button>bank_narration</Button>
