@@ -163,14 +163,10 @@ const HomePage = () => {
             </>
           ) : (
             <ZaubaButton onClick={() => setShowBusinessTool(true)}>
-              <Link href="#">Add Business Tool</Link>
+              <Link href="#">open tool</Link>
             </ZaubaButton>
           )}
-          <textarea id="formattedContent" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition" rows="5" readOnly></textarea>
-          <div className="flex gap-4">
-            <ZaubaButton onClick={handleCopyButtonClick}>Copy</ZaubaButton>
-            <ResetButton onClick={handleResetButtonClick}>Reset</ResetButton>
-          </div>
+          
         </div>
       </div>
     </div>
