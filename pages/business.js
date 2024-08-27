@@ -138,7 +138,7 @@ const HomePage = () => {
         );
         console.log('Document created:', response);
         setIsDataSaved(true);
-        toast.success("Data saved to Appwrite successfully.");
+        toast.success("Data converted.");
       } catch (error) {
         console.error('Error saving data to Appwrite:', error);
         toast.error(`Failed to save data to Appwrite: ${error.message}`);
