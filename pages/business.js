@@ -1,8 +1,7 @@
-import { useState } from 'react';
-import Link from 'next/link';
-import ZaubaButton from '../components/ZaubaButton';
-import ResetButton from '../components/ResetButton';
+import { useState, useEffect } from 'react';
 import { Client, Databases } from 'appwrite';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const client = new Client()
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
@@ -12,7 +11,6 @@ const databases = new Databases(client);
 
 const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
 const COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID;
-
 
 const indianStates = [
   "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh",
@@ -51,7 +49,36 @@ const formatDate = (inputDate) => {
 const HomePage = () => {
   const [state, setState] = useState('');
   const [suggestions, setSuggestions] = useState([]);
-  const [showBusinessTool, setShowBusinessTool] = useState(false);
+  const [formData, setFormData] = useState({
+    tradeName: '',
+    natureOfBusiness: '',
+    line1: '',
+    line2: '',
+    pinCode: '',
+    city: '',
+    state: '',
+    RegNo: '',
+    RegDate: '',
+    ExpiryDate: ''
+  });
+  const [formattedContent, setFormattedContent] = useState('');
+  const [isDataSaved, setIsDataSaved] = useState(false);
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target;
+    let newValue = value;
+
+    if (['tradeName', 'natureOfBusiness', 'line1', 'line2', 'city', 'state'].includes(id)) {
+      newValue = removeSpecialCharacters(value);
+    } else if (id === 'pinCode') {
+      newValue = value.replace(/\D/g, '').slice(0, 6);
+    }
+
+    setFormData(prevData => ({ ...prevData, [id]: newValue }));
+    if (id === 'state') {
+      handleStateInputChange(e);
+    }
+  };
 
   const handleStateInputChange = (e) => {
     const inputText = e.target.value.toLowerCase();
@@ -62,117 +89,211 @@ const HomePage = () => {
 
   const handleStateSuggestionClick = (suggestion) => {
     setState(suggestion);
+    setFormData(prevData => ({ ...prevData, state: suggestion }));
     setSuggestions([]);
   };
 
   const handleCopyButtonClick = async () => {
-    const tradeName = removeSpecialCharacters(document.getElementById("tradeName").value);
-    const natureOfBusiness = removeSpecialCharacters(document.getElementById("natureOfBusiness").value);
-    const line1 = removeSpecialCharacters(document.getElementById("line1").value);
-    const line2 = removeSpecialCharacters(document.getElementById("line2").value);
-    const pinCode = removeSpecialCharacters(document.getElementById("pinCode").value);
-    const city = removeSpecialCharacters(document.getElementById("city").value);
-    const state = removeSpecialCharacters(document.getElementById("state").value);
-    const RegNo = document.getElementById("RegNo").value;
-    const RegDate = formatDate(document.getElementById("RegDate").value);
-    const ExpiryDate = formatDate(document.getElementById("ExpiryDate").value);
+    const {
+      tradeName, natureOfBusiness, line1, line2, pinCode, city, state, RegNo, RegDate, ExpiryDate
+    } = formData;
 
-    if (!tradeName || !natureOfBusiness || !line1 || !line2 || !pinCode || !city || !state || !RegNo) {
-      alert("Please fill in all the required fields.");
+    if (!tradeName || !natureOfBusiness || !line1 || !line2 || !pinCode || !city || !state || !RegNo || !RegDate || !ExpiryDate) {
+      toast.error("Please fill in all the required fields.");
       return;
     }
 
-    if (!validateDate(RegDate) || !validateDate(ExpiryDate)) {
-      alert("Invalid date format. Please use DD/MM/YYYY format.");
+    const formattedRegDate = formatDate(RegDate);
+    const formattedExpiryDate = formatDate(ExpiryDate);
+
+    if (!validateDate(formattedRegDate) || !validateDate(formattedExpiryDate)) {
+      toast.error("Invalid date format. Please use DD/MM/YYYY format.");
       return;
     }
 
-    const formattedText = `Trade Name/Name of Business: ${tradeName} | Nature of Business/Line of Business/Type of Business: ${natureOfBusiness} | Line1: ${line1} | Line2: ${line2} | PinCode: ${pinCode} | City: ${city} | State: ${state} | RegNo: ${RegNo} | RegDate: ${RegDate} | ExpiryDate: ${ExpiryDate}`;
+    const formattedText = `Trade Name/Name of Business: ${tradeName} | Nature of Business/Line of Business/Type of Business: ${natureOfBusiness} | Line1: ${line1} | Line2: ${line2} | PinCode: ${pinCode} | City: ${city} | State: ${state} | RegNo: ${RegNo} | RegDate: ${formattedRegDate} | ExpiryDate: ${formattedExpiryDate}`;
 
-    const formattedContent = document.getElementById("formattedContent");
-    formattedContent.value = formattedText;
-    formattedContent.select();
-    document.execCommand("copy");
+    setFormattedContent(formattedText);
+    navigator.clipboard.writeText(formattedText);
+    toast.success("Content copied to clipboard!");
 
-    try {
-      const response = await databases.createDocument(
-        DATABASE_ID,
-        COLLECTION_ID,
-        'unique()',
-        {
-          tradeName,
-          natureOfBusiness,
-          line1,
-          line2,
-          pinCode,
-          city,
-          state,
-          RegNo,
-          RegDate,
-          ExpiryDate,
-        }
-      );
-      //console.log('Document created:', response);
-      //alert("Data saved to Appwrite successfully.");
-    } catch (error) {
-      //console.error('Error saving data to Appwrite:', error);
-      //alert(`Failed to save data to Appwrite: ${error.message}`);
+    if (!isDataSaved) {
+      try {
+        const response = await databases.createDocument(
+          DATABASE_ID,
+          COLLECTION_ID,
+          'unique()',
+          {
+            tradeName,
+            natureOfBusiness,
+            line1,
+            line2,
+            pinCode,
+            city,
+            state,
+            RegNo,
+            RegDate: formattedRegDate,
+            ExpiryDate: formattedExpiryDate,
+          }
+        );
+        console.log('Document created:', response);
+        setIsDataSaved(true);
+        toast.success("Data saved to Appwrite successfully.");
+      } catch (error) {
+        console.error('Error saving data to Appwrite:', error);
+        toast.error(`Failed to save data to Appwrite: ${error.message}`);
+      }
     }
   };
 
   const handleResetButtonClick = () => {
-    document.querySelectorAll("input[type='text'], input[type='date']").forEach(input => {
-      input.value = "";
+    setFormData({
+      tradeName: '',
+      natureOfBusiness: '',
+      line1: '',
+      line2: '',
+      pinCode: '',
+      city: '',
+      state: '',
+      RegNo: '',
+      RegDate: '',
+      ExpiryDate: ''
     });
-    document.getElementById("formattedContent").value = "";
     setState('');
     setSuggestions([]);
+    setFormattedContent('');
+    setIsDataSaved(false);
   };
 
-
   return (
-    <div className="min-h-screen dark:bg-white bg-black dark:bg-dot-black/[0.2] bg-dot-white/[0.2] relative flex flex-col p-4">
-      <div className="mx-auto">
-        <div className="bg-gradient-to-br from-black/70 to-gray-900/70 rounded-2xl shadow-3xl p-6 border-4 border-gray-600/50 mb-6">
-          <h1 className="text-3xl font-bold mb-6 text-white">Business Information</h1>
-          {showBusinessTool ? (
-            <>
-              <input type="text" id="tradeName" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" placeholder="Trade Name/Name of Business" />
-              <input type="text" id="natureOfBusiness" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" placeholder="Nature of Business/Line of Business/Type of Business" />
-              <input type="text" id="line1" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" placeholder="Line1" />
-              <input type="text" id="line2" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" placeholder="Line2" />
-              <input type="text" id="pinCode" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" placeholder="PinCode" />
-              <input type="text" id="city" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" placeholder="City" />
-              <input type="text" id="state" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" value={state} onChange={handleStateInputChange} placeholder="State" />
-              <ul className="list-disc pl-5 mb-4">
-                {suggestions.map((suggestion, index) => (
-                  <li key={index} className="cursor-pointer hover:bg-white hover:bg-opacity-30 text-white" onClick={() => handleStateSuggestionClick(suggestion)}>{suggestion}</li>
-                ))}
-              </ul>
-              <input type="text" id="RegNo" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" placeholder="RegNo" />
-              <div className="flex gap-4 mb-4">
-                <div className="w-1/2">
-                  <label htmlFor="RegDate" className="text-white mb-2 block">Registration Date</label>
-                  <input type="date" id="RegDate" className="bg-transparent border border-white/20 text-white placeholder-white/50 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" />
-                </div>
-                <div className="w-1/2">
-                  <label htmlFor="ExpiryDate" className="text-white mb-2 block">Expiry Date</label>
-                  <input type="date" id="ExpiryDate" className="bg-transparent border border-white/20 text-white placeholder-white/50 rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-purple-500 w-full transition" />
-                </div>
-              </div>
-            </>
-          ) : (
-            <ZaubaButton onClick={() => setShowBusinessTool(true)}>
-              <Link href="#">open tool</Link>
-            </ZaubaButton>
-          )}
-          <textarea id="formattedContent" className="bg-transparent border border-white/20 text-white placeholder-white/50 mb-4 rounded-lg p-2 w-full focus:outline-none focus:ring-2 focus:ring-purple-500 transition" rows="5" readOnly></textarea>
-          <div className="flex gap-4">
-            <ZaubaButton onClick={handleCopyButtonClick}>Copy</ZaubaButton>
-            <ResetButton onClick={handleResetButtonClick}>Reset</ResetButton>
+    <div className="min-h-screen bg-black text-white font-sans">
+      <div className="container mx-auto px-4 py-8">
+        <div className="bg-gradient-to-br from-purple-900/30 to-black rounded-3xl shadow-2xl p-8 border border-purple-500/30 backdrop-blur-sm">
+          <h1 className="text-4xl font-bold mb-8 text-center text-purple-300">Business Information</h1>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input
+              type="text"
+              id="tradeName"
+              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              placeholder="Trade Name/Name of Business"
+              value={formData.tradeName}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              id="natureOfBusiness"
+              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              placeholder="Nature of Business/Line of Business/Type of Business"
+              value={formData.natureOfBusiness}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              id="line1"
+              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              placeholder="Line1"
+              value={formData.line1}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              id="line2"
+              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              placeholder="Line2"
+              value={formData.line2}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              id="pinCode"
+              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              placeholder="PinCode"
+              value={formData.pinCode}
+              onChange={handleInputChange}
+            />
+            <input
+              type="text"
+              id="city"
+              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              placeholder="City"
+              value={formData.city}
+              onChange={handleInputChange}
+            />
+            <div className="relative">
+              <input
+                type="text"
+                id="state"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
+                placeholder="State"
+                value={formData.state}
+                onChange={handleInputChange}
+              />
+              {suggestions.length > 0 && (
+                <ul className="absolute z-10 w-full bg-black/80 border border-purple-500/30 rounded-lg mt-1 max-h-40 overflow-y-auto">
+                  {suggestions.map((suggestion, index) => (
+                    <li
+                      key={index}
+                      className="cursor-pointer p-2 hover:bg-purple-500/30"
+                      onClick={() => handleStateSuggestionClick(suggestion)}
+                    >
+                      {suggestion}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <input
+              type="text"
+              id="RegNo"
+              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              placeholder="RegNo"
+              value={formData.RegNo}
+              onChange={handleInputChange}
+            />
+            <div>
+              <label htmlFor="RegDate" className="text-purple-300 mb-2 block">Registration Date</label>
+              <input
+                type="date"
+                id="RegDate"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
+                value={formData.RegDate}
+                onChange={handleInputChange}
+              />
+            </div>
+            <div>
+              <label htmlFor="ExpiryDate" className="text-purple-300 mb-2 block">Expiry Date</label>
+              <input
+                type="date"
+                id="ExpiryDate"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
+                value={formData.ExpiryDate}
+                onChange={handleInputChange}
+              />
+            </div>
+          </div>
+          <textarea
+            className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 w-full mt-6 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+            rows="5"
+            value={formattedContent}
+            readOnly
+          ></textarea>
+          <div className="flex gap-4 mt-6">
+            <button
+              onClick={handleCopyButtonClick}
+              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              Copy
+            </button>
+            <button
+              onClick={handleResetButtonClick}
+              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+            >
+              Reset
+            </button>
           </div>
         </div>
       </div>
+      <ToastContainer position="bottom-right" theme="dark" />
     </div>
   );
 };
