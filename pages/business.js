@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Client, Databases } from 'appwrite';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import Footer from '../components/Footer'; // Adjust this path if necessary
 
 const client = new Client()
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
@@ -46,8 +47,7 @@ const formatDate = (inputDate) => {
   return `${day}/${month}/${year}`;
 };
 
-const HomePage = () => {
-  const [state, setState] = useState('');
+const BusinessPage = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [formData, setFormData] = useState({
     tradeName: '',
@@ -76,19 +76,18 @@ const HomePage = () => {
 
     setFormData(prevData => ({ ...prevData, [id]: newValue }));
     if (id === 'state') {
-      handleStateInputChange(e);
+      handleStateInputChange(newValue);
     }
   };
 
-  const handleStateInputChange = (e) => {
-    const inputText = e.target.value.toLowerCase();
-    const filteredSuggestions = indianStates.filter(state => state.toLowerCase().includes(inputText));
+  const handleStateInputChange = (inputText) => {
+    const filteredSuggestions = indianStates.filter(state => 
+      state.toLowerCase().includes(inputText.toLowerCase())
+    );
     setSuggestions(filteredSuggestions);
-    setState(e.target.value);
   };
 
   const handleStateSuggestionClick = (suggestion) => {
-    setState(suggestion);
     setFormData(prevData => ({ ...prevData, state: suggestion }));
     setSuggestions([]);
   };
@@ -140,8 +139,8 @@ const HomePage = () => {
         setIsDataSaved(true);
         toast.success("Data converted.");
       } catch (error) {
-        console.error('Error saving data to Appwrite:', error);
-        toast.error(`Failed to save data to Appwrite: ${error.message}`);
+        console.error('Error :', error);
+        toast.error(`Failed to converted : ${error.message}`);
       }
     }
   };
@@ -159,143 +158,145 @@ const HomePage = () => {
       RegDate: '',
       ExpiryDate: ''
     });
-    setState('');
     setSuggestions([]);
     setFormattedContent('');
     setIsDataSaved(false);
   };
 
   return (
-    <div className="min-h-screen bg-black text-white font-sans">
-      <div className="container mx-auto px-4 py-8">
-        <div className="bg-gradient-to-br from-purple-900/30 to-black rounded-3xl shadow-2xl p-8 border border-purple-500/30 backdrop-blur-sm">
-          <h1 className="text-4xl font-bold mb-8 text-center text-purple-300">Business Information</h1>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <input
-              type="text"
-              id="tradeName"
-              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-              placeholder="Trade Name/Name of Business"
-              value={formData.tradeName}
-              onChange={handleInputChange}
-            />
-            <input
-              type="text"
-              id="natureOfBusiness"
-              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-              placeholder="Nature of Business/Line of Business/Type of Business"
-              value={formData.natureOfBusiness}
-              onChange={handleInputChange}
-            />
-            <input
-              type="text"
-              id="line1"
-              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-              placeholder="Line1"
-              value={formData.line1}
-              onChange={handleInputChange}
-            />
-            <input
-              type="text"
-              id="line2"
-              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-              placeholder="Line2"
-              value={formData.line2}
-              onChange={handleInputChange}
-            />
-            <input
-              type="text"
-              id="pinCode"
-              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-              placeholder="PinCode"
-              value={formData.pinCode}
-              onChange={handleInputChange}
-            />
-            <input
-              type="text"
-              id="city"
-              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-              placeholder="City"
-              value={formData.city}
-              onChange={handleInputChange}
-            />
-            <div className="relative">
+    <div className="min-h-screen bg-black text-white font-sans flex flex-col">
+      <div className="flex-grow">
+        <div className="container mx-auto px-4 py-8">
+          <div className="bg-gradient-to-br from-purple-900/30 to-black rounded-3xl shadow-2xl p-8 border border-purple-500/30 backdrop-blur-sm">
+            <h1 className="text-4xl font-bold mb-8 text-center text-purple-300">Business Information</h1>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <input
                 type="text"
-                id="state"
-                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
-                placeholder="State"
-                value={formData.state}
+                id="tradeName"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                placeholder="Trade Name/Name of Business"
+                value={formData.tradeName}
                 onChange={handleInputChange}
               />
-              {suggestions.length > 0 && (
-                <ul className="absolute z-10 w-full bg-black/80 border border-purple-500/30 rounded-lg mt-1 max-h-40 overflow-y-auto">
-                  {suggestions.map((suggestion, index) => (
-                    <li
-                      key={index}
-                      className="cursor-pointer p-2 hover:bg-purple-500/30"
-                      onClick={() => handleStateSuggestionClick(suggestion)}
-                    >
-                      {suggestion}
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-            <input
-              type="text"
-              id="RegNo"
-              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-              placeholder="RegNo"
-              value={formData.RegNo}
-              onChange={handleInputChange}
-            />
-            <div>
-              <label htmlFor="RegDate" className="text-purple-300 mb-2 block">Registration Date</label>
               <input
-                type="date"
-                id="RegDate"
-                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
-                value={formData.RegDate}
+                type="text"
+                id="natureOfBusiness"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                placeholder="Nature of Business/Line of Business/Type of Business"
+                value={formData.natureOfBusiness}
                 onChange={handleInputChange}
               />
-            </div>
-            <div>
-              <label htmlFor="ExpiryDate" className="text-purple-300 mb-2 block">Expiry Date</label>
               <input
-                type="date"
-                id="ExpiryDate"
-                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
-                value={formData.ExpiryDate}
+                type="text"
+                id="line1"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                placeholder="Line1"
+                value={formData.line1}
                 onChange={handleInputChange}
               />
+              <input
+                type="text"
+                id="line2"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                placeholder="Line2"
+                value={formData.line2}
+                onChange={handleInputChange}
+              />
+              <input
+                type="text"
+                id="pinCode"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                placeholder="PinCode"
+                value={formData.pinCode}
+                onChange={handleInputChange}
+              />
+              <input
+                type="text"
+                id="city"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                placeholder="City"
+                value={formData.city}
+                onChange={handleInputChange}
+              />
+              <div className="relative">
+                <input
+                  type="text"
+                  id="state"
+                  className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
+                  placeholder="State"
+                  value={formData.state}
+                  onChange={handleInputChange}
+                />
+                {suggestions.length > 0 && (
+                  <ul className="absolute z-10 w-full bg-black/80 border border-purple-500/30 rounded-lg mt-1 max-h-40 overflow-y-auto">
+                    {suggestions.map((suggestion, index) => (
+                      <li
+                        key={index}
+                        className="cursor-pointer p-2 hover:bg-purple-500/30"
+                        onClick={() => handleStateSuggestionClick(suggestion)}
+                      >
+                        {suggestion}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+              <input
+                type="text"
+                id="RegNo"
+                className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                placeholder="RegNo"
+                value={formData.RegNo}
+                onChange={handleInputChange}
+              />
+              <div>
+                <label htmlFor="RegDate" className="text-purple-300 mb-2 block">Registration Date</label>
+                <input
+                  type="date"
+                  id="RegDate"
+                  className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
+                  value={formData.RegDate}
+                  onChange={handleInputChange}
+                />
+              </div>
+              <div>
+                <label htmlFor="ExpiryDate" className="text-purple-300 mb-2 block">Expiry Date</label>
+                <input
+                  type="date"
+                  id="ExpiryDate"
+                  className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
+                  value={formData.ExpiryDate}
+                  onChange={handleInputChange}
+                />
+              </div>
             </div>
-          </div>
-          <textarea
-            className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 w-full mt-6 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-            rows="5"
-            value={formattedContent}
-            readOnly
-          ></textarea>
-          <div className="flex gap-4 mt-6">
-            <button
-              onClick={handleCopyButtonClick}
-              className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
-            >
-              Copy
-            </button>
-            <button
-              onClick={handleResetButtonClick}
-              className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
-            >
-              Reset
-            </button>
+            <textarea
+              className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 w-full mt-6 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+              rows="5"
+              value={formattedContent}
+              readOnly
+            ></textarea>
+            <div className="flex gap-4 mt-6">
+              <button
+                onClick={handleCopyButtonClick}
+                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+              >
+                Copy
+              </button>
+              <button
+                onClick={handleResetButtonClick}
+                className="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+              >
+                Reset
+              </button>
+            </div>
           </div>
         </div>
       </div>
+      <Footer />
       <ToastContainer position="bottom-right" theme="dark" />
     </div>
   );
 };
 
-export default HomePage;
+export default BusinessPage;

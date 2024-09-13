@@ -10,12 +10,14 @@
   },
   "dependencies": {
     "@nextui-org/button": "^2.0.37",
+    "@supabase/supabase-js": "^2.45.4",
     "@tailwindcss/forms": "^0.5.7",
     "appwrite": "^15.0.0",
     "autoprefixer": "^10.4.19",
     "clsx": "^2.1.1",
     "font-awesome": "^4.7.0",
     "framer-motion": "^11.3.19",
+    "lucide-react": "^0.441.0",
     "mini-svg-data-uri": "^1.4.4",
     "next": "14.2.5",
     "react": "^18",
@@ -24,7 +26,8 @@
     "react-icons": "^5.2.1",
     "react-toastify": "^10.0.5",
     "styled-components": "^6.1.12",
-    "tailwind-merge": "^2.4.0"
+    "tailwind-merge": "^2.4.0",
+    "use-clipboard-copy": "^0.2.0"
   },
   "devDependencies": {
     "@types/node": "^20",
