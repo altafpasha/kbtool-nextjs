@@ -37,7 +37,7 @@ export default async function handler(req, res) {
       data
     );
 
-    res.status(200).json({ status: 'created', message: 'Address saved successfully', result });
+    res.status(200).json({ status: 'created', message: 'Address copied', result });
   } catch (error) {
     console.error('Appwrite error:', error);
     res.status(500).json({ error: error.message || 'An error occurred while processing your request' });

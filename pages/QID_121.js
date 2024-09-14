@@ -178,7 +178,7 @@ export default function AddressVerificationForm() {
                 disabled={!line1 || !line2 || !isPinCodeValid || !city || !state}
                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Copy className="mr-2 h-4 w-4" /> Copy & Save
+                <Copy className="mr-2 h-4 w-4" /> Copy
               </button>
               <button
                 onClick={handleReset}
