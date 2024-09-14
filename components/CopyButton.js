@@ -1,4 +1,5 @@
 import React from 'react';
+import Image from 'next/image';
 
 const Button = ({ children, className, ...props }) => {
   return (
@@ -12,7 +13,7 @@ const Button = ({ children, className, ...props }) => {
       <div className="relative flex space-x-2 items-center z-10 rounded-full bg-zinc-950 py-0.5 px-4 ring-1 ring-white/10">
         {children}
        
-        <img 
+        <Image 
           src="https://img.icons8.com/?size=100&id=XQI1YeBtZJbU&format=png&color=000000" 
           alt="icon" 
           width="16" 

@@ -1,16 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { Client, Databases, Query } from 'appwrite';
 import { useClipboard } from 'use-clipboard-copy';
 import { Copy, RefreshCw, ArrowLeft } from 'lucide-react';
 import Footer from '../components/Footer'; // Adjust the import path as necessary
 import { useRouter } from 'next/router';
-
-// Initialize Appwrite client
-const client = new Client()
-    .setEndpoint(process.env.NEXT_PUBLIC_ADDRESS_VERIFY_APPWRITE_ENDPOINT)
-    .setProject(process.env.NEXT_PUBLIC_ADDRESS_VERIFY_APPWRITE_PROJECT_ID);
-
-const databases = new Databases(client);
 
 export default function AddressVerificationForm() {
   const [line1, setLine1] = useState('');
@@ -47,20 +39,6 @@ export default function AddressVerificationForm() {
     return `Line1: ${line1} | Line2: ${line2}| PinCode: ${pinCode}| Cty: ${city}| State: ${state}`;
   };
 
-  const checkExistingAddress = async (formattedAddress) => {
-    try {
-      const response = await databases.listDocuments(
-        process.env.NEXT_PUBLIC_ADDRESS_VERIFY_APPWRITE_DATABASE_ID,
-        process.env.NEXT_PUBLIC_ADDRESS_VERIFY_APPWRITE_COLLECTION_ID,
-        [Query.equal('address', formattedAddress)]
-      );
-      return response.documents.length > 0;
-    } catch (error) {
-      console.error('Error checking existing address:', error);
-      return false;
-    }
-  };
-
   const handleCopyAndSave = async () => {
     if (!isPinCodeValid) {
       setAlertType('error');
@@ -73,31 +51,38 @@ export default function AddressVerificationForm() {
     clipboard.copy(formattedAddress);
     setCopiedOutput(formattedAddress);
 
-    const addressExists = await checkExistingAddress(formattedAddress);
-
-    if (!addressExists) {
-      try {
-        const result = await databases.createDocument(
-          process.env.NEXT_PUBLIC_ADDRESS_VERIFY_APPWRITE_DATABASE_ID,
-          process.env.NEXT_PUBLIC_ADDRESS_VERIFY_APPWRITE_COLLECTION_ID,
-          'unique()',
-          {
+    try {
+      const response = await fetch('/api/address-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          action: 'createDocument',
+          data: {
             address: formattedAddress,
             created_at: new Date().toISOString(),
-          }
-        );
-        
-        console.log('Appwrite response:', result);
-        setAlertType('success');
-        setAlertMessage('Address copied successfully!');
-      } catch (error) {
-        console.error('Detailed error:', error);
-        setAlertType('error');
-        setAlertMessage(`Address copied, but failed: ${error.message}`);
+          },
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        if (result.status === 'created') {
+          setAlertType('success');
+          setAlertMessage('Address copied successfully!');
+        } else if (result.status === 'exists') {
+          setAlertType('info');
+          setAlertMessage('Address copied. .');
+        }
+      } else {
+        throw new Error(result.error || 'Failed ');
       }
-    } else {
-      setAlertType('info');
-      setAlertMessage('Address copied. It already copied .');
+    } catch (error) {
+      console.error('Error:', error);
+      setAlertType('error');
+      setAlertMessage(`Address copied, but failed : ${error.message}`);
     }
     
     setShowAlert(true);

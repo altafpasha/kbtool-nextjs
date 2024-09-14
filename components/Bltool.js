@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import Image from 'next/image';
+
 
 const indianStates = [
   "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh",
@@ -114,7 +116,7 @@ const HomePage = () => {
         <textarea id="formattedContent" className="border rounded p-2 w-full mt-2" rows="5" readOnly></textarea>
       </div>
       <footer className="mt-6 text-center">
-        <img src="/img/favicon_io/android-chrome-192x192.png" alt="Short Logo" className="mx-auto mb-2" />
+        <Image src="/img/favicon_io/android-chrome-192x192.png" alt="Short Logo" className="mx-auto mb-2" />
         <p>&copy; 2022 <a href="https://opensecai.com" className="text-blue-500">OpensecAi</a>. All rights reserved <a href="https://imaltaf.online" className="text-blue-500">Developed by ALTAF</a></p>
       </footer>
     </div>
