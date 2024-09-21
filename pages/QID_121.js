@@ -36,7 +36,7 @@ export default function AddressVerificationForm() {
   }, [pinCode]);
 
   const formatAddress = () => {
-    return `Line1: ${line1} | Line2: ${line2}| PinCode: ${pinCode}| Cty: ${city}| State: ${state}`;
+    return `Line1: ${line1} | Line2: ${line2}| PinCode: ${pinCode}| City: ${city}| State: ${state}`;
   };
 
   const handleCopyAndSave = async () => {
