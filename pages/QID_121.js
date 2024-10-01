@@ -36,10 +36,10 @@ export default function AddressVerificationForm() {
   }, [pinCode]);
 
   const formatAddress = () => {
-    return `Line1: ${line1} | Line2: ${line2}| PinCode: ${pinCode}| Cty: ${city}| State: ${state}`;
+    return `Line1: ${line1} | Line2: ${line2}| PinCode: ${pinCode}| City: ${city}| State: ${state}`;
   };
 
-  const handleCopyAndSave = async () => {
+  const handleCopyAndSave = () => {
     if (!isPinCodeValid) {
       setAlertType('error');
       setAlertMessage('PIN code must be exactly 6 digits long.');
@@ -51,40 +51,8 @@ export default function AddressVerificationForm() {
     clipboard.copy(formattedAddress);
     setCopiedOutput(formattedAddress);
 
-    try {
-      const response = await fetch('/api/address-verification', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          action: 'createDocument',
-          data: {
-            address: formattedAddress,
-            created_at: new Date().toISOString(),
-          },
-        }),
-      });
-
-      const result = await response.json();
-
-      if (response.ok) {
-        if (result.status === 'created') {
-          setAlertType('success');
-          setAlertMessage('Address copied successfully!');
-        } else if (result.status === 'exists') {
-          setAlertType('info');
-          setAlertMessage('Address copied. .');
-        }
-      } else {
-        throw new Error(result.error || 'Failed ');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      setAlertType('error');
-      setAlertMessage(`Address copied, but failed : ${error.message}`);
-    }
-    
+    setAlertType('success');
+    setAlertMessage('Address copied successfully!');
     setShowAlert(true);
   };
 
