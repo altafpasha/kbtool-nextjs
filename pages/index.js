@@ -1,12 +1,14 @@
+import React from 'react';
 import Layout from '../components/Layout';
-import Footer from '../components/Footer';
 
-export default function Home() {
+const IndexPage = () => {
   return (
     <Layout>
-      
-      
+      {/* Your page content goes here */}
+      <h1>Welcome to the Home Page</h1>
+      {/* Add more components or content as needed */}
     </Layout>
-    
   );
-}
+};
+
+export default IndexPage;

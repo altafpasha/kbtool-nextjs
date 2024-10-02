@@ -8,6 +8,11 @@ import Button from './Button';
 import ResetButton from './ResetButton';
 import ZaubaButton from './ZaubaButton';
 import SocialMediaCard from '../components/SocialMediaCard';
+import AdPopup from './AdPopup';
+import NotificationPopup from './NotificationPopup';
+
+
+
 
 // Initialize Appwrite
 const client = new Client();
@@ -32,6 +37,11 @@ const Layout = ({ children }) => {
   const [autoReset, setAutoReset] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [showAdPopup, setShowAdPopup] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
+
+
 
   useEffect(() => {
     fetchCustomComments();
@@ -41,6 +51,22 @@ const Layout = ({ children }) => {
     if (storedAutoMode !== null) setAutoMode(storedAutoMode);
     if (storedAutoReset !== null) setAutoReset(storedAutoReset);
   }, []);
+
+  useEffect(() => {
+    // ... existing useEffect code
+    
+    // Show ad popup on page load/refresh
+    setShowAdPopup(true);
+
+    // Show a notification after a short delay
+    const timer = setTimeout(() => {
+      setNotificationMessage('Welcome to our tool! Hope you find it useful.');
+      setShowNotification(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
 
   useEffect(() => {
     localStorage.setItem('autoMode', JSON.stringify(autoMode));
@@ -461,7 +487,16 @@ const Layout = ({ children }) => {
         </div>
       )}
 
-      <Footer />
+    <Footer />
+      
+      {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
+      
+      {showNotification && (
+        <NotificationPopup 
+          message={notificationMessage} 
+          onClose={() => setShowNotification(false)} 
+        />
+      )}
       
       {children}
     </div>
