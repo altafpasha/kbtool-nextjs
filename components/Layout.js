@@ -407,9 +407,9 @@ const Layout = ({ children }) => {
                   <Button onClick={handleManualConvertAndCopy} className="text-xs sm:text-sm">
                     <i className="fas fa-copy"></i> Convert & Copy
                   </Button>
-                  <ResetButton onClick={resetFields} className="text-xs sm:text-sm">
+                  <Button onClick={resetFields} className="text-xs sm:text-sm">
                     <i className="fas fa-redo"></i> Reset <span>{resetCounter}</span>
-                  </ResetButton>
+                  </Button>
                   <label className={toggleStyle}>
                     <input 
                       type="checkbox" 
