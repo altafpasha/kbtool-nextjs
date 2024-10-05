@@ -10,11 +10,12 @@ import ZaubaButton from './ZaubaButton';
 import SocialMediaCard from '../components/SocialMediaCard';
 import AdPopup from './AdPopup';
 import NotificationPopup from './NotificationPopup';
+import SkewButton from './SkewButton';
 
 
 
 
-// Initialize Appwrite
+
 const client = new Client();
 client
     .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
@@ -60,7 +61,7 @@ const Layout = ({ children }) => {
 
     // Show a notification after a short delay
     const timer = setTimeout(() => {
-      setNotificationMessage('Welcome to our tool! Hope you find it useful.');
+      setNotificationMessage('Welcome to KBTool! Hope you find it useful. custom comments buttons will save in database ');
       setShowNotification(true);
     }, 3000);
 
@@ -175,6 +176,10 @@ const Layout = ({ children }) => {
 
   const addCustomComment = async () => {
     if (newCommentTitle && newCommentContent) {
+      if (newCommentTitle.length > 10) {
+        setError('Button Title should not exceed 10 characters. You can add more details in the comment area.');
+        return;
+      }
       setIsLoading(true);
       try {
         await databases.createDocument(
@@ -189,6 +194,8 @@ const Layout = ({ children }) => {
         setNewCommentTitle('');
         setNewCommentContent('');
         fetchCustomComments(); // Refresh the list
+        setNotificationMessage('Comment button added successfully. To delete a comment button, please contact the admin.');
+        setShowNotification(true);
       } catch (error) {
         console.error('Error adding comment:', error);
         setError('Failed to add comment. Please try again.');
@@ -217,12 +224,12 @@ const Layout = ({ children }) => {
   };
 
   const glassmorphismStyle = `
-    bg-gradient-to-br from-black/70 to-gray-900/70
-    backdrop-blur-3xl
-    border-4 border-gray-600/50
-    shadow-3xl
-    rounded-2xl
-  `;
+      bg-gradient-to-br from-black/70 to-gray-900/70
+      backdrop-blur-3xl
+      border-4 border-gray-600/50
+      shadow-xl
+      rounded-2xl
+    `;
 
   const inputStyle = `
     bg-transparent
@@ -250,17 +257,23 @@ const Layout = ({ children }) => {
   return (
     <div className="min-h-screen dark:bg-white bg-black dark:bg-dot-black/[0.2] bg-dot-white/[0.2] relative flex flex-col">
       <div className="flex-grow p-4 space-y-4">
+      {copied && (
+          <div className="bg-purple-600 text-white py-2 px-4 rounded text-sm mb-4">
+            Copied to clipboard!
+          </div>
+        )}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           <div className={`${glassmorphismStyle} p-4`}>
             <span className="absolute inset-0 rounded-lg bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(128,90,213,0.6)_0%,rgba(128,90,213,0)_75%)] opacity-50" />
             
             <div className="flex justify-around p-2 mb-4 bg-white/10 rounded-full">
               {['approved', 'reject', 'comments'].map((tab) => (
-                <ZaubaButton key={tab} onClick={() => showTab(tab)} className={`text-xs sm:text-sm ${activeTab === tab ? 'bg-purple-500' : ''}`}>
+                <SkewButton key={tab} onClick={() => showTab(tab)} className={`text-xs sm:text-sm ${activeTab === tab ? 'bg-purple-500' : ''}`}>
                   {tab.charAt(0).toUpperCase() + tab.slice(1)}
-                </ZaubaButton>
+                </SkewButton>
               ))}
             </div>
+          
 
             <div className={`flex-wrap text-medium gap-2 ${activeTab === 'approved' ? 'flex' : 'hidden'}`}>
               <h5 className="font-bold text-white w-full">QID_109</h5>
@@ -434,45 +447,32 @@ const Layout = ({ children }) => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <div className={`${glassmorphismStyle} p-4`}>
-                <h5 className="font-bold mb-2 text-white text-sm sm:text-base">Add/Delete Custom Comments Button</h5>
-                <div className="space-y-2">
-                  <input
-                    type="text"
-                    value={newCommentTitle}
-                    onChange={(e) => setNewCommentTitle(e.target.value)}
-                    placeholder="Button Title"
-                    className={inputStyle}
-                  />
-                  <textarea
-                    value={newCommentContent}
-                    onChange={(e) => setNewCommentContent(e.target.value)}
-                    placeholder="Comment Content"
-                    className={`${inputStyle} min-h-[100px]`}
-                  />
-                  <div className="flex flex-wrap gap-2">
-                    <ZaubaButton onClick={addCustomComment} disabled={isLoading}>
-                      {isLoading ? 'Adding...' : 'Add Comment Button'}
-                    </ZaubaButton>
-                    <select
-                      value={selectedCommentIndex ?? ''}
-                      onChange={(e) => setSelectedCommentIndex(Number(e.target.value))}
-                      className={`${inputStyle} flex-grow`}
-                    >
-                      <option className="bg-black" value="">Select a comment to delete</option>
-                      {customComments.map((comment, index) => (
-                        <option className="bg-black" key={index} value={index}>
-                          {comment.title}
-                        </option>
-                      ))}
-                    </select>
-                    <ZaubaButton onClick={handleDeleteComment} className="text-xs sm:text-sm" disabled={isLoading}>
-                      {isLoading ? 'Deleting...' : 'Delete Comment'}
-                    </ZaubaButton>
-                  </div>
-                  {error && <p className="text-red-500 mt-2">{error}</p>}
-                </div>
+          <div className={`${glassmorphismStyle} p-4`}>
+            <h5 className="font-bold mb-2 text-white text-sm sm:text-base">Add Custom Comments Button in Database</h5>
+            <div className="space-y-2">
+              <input
+                type="text"
+                value={newCommentTitle}
+                onChange={(e) => setNewCommentTitle(e.target.value)}
+                placeholder="Button Title in Shortform (max 10 characters)"
+                className={inputStyle}
+                maxLength={10}
+              />
+              <textarea
+                value={newCommentContent}
+                onChange={(e) => setNewCommentContent(e.target.value)}
+                placeholder="Comment Content"
+                className={`${inputStyle} min-h-[100px]`}
+              />
+              <div className="flex flex-wrap gap-2">
+                <ZaubaButton onClick={addCustomComment} disabled={isLoading}>
+                  {isLoading ? 'Adding...' : 'Add Comment Button'}
+                </ZaubaButton>
               </div>
+              {error && <p className="text-red-500 mt-2">{error}</p>}
+            </div>
+          </div>
+
               <div className={`${glassmorphismStyle} p-4`}>
                 <SocialMediaCard />
               </div>
@@ -481,13 +481,9 @@ const Layout = ({ children }) => {
         </div>
       </div>
 
-      {copied && (
-        <div className="fixed bottom-24 left-4 bg-purple-600 text-white py-2 px-4 rounded text-sm">
-          Copied to clipboard!
-        </div>
-      )}
+      
 
-    <Footer />
+<Footer className="mt-auto" />
       
       {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
       

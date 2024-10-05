@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import ZaubaButton from './ZaubaButton';
 import ResetButton from './ResetButton';
+import CyberpunkButton from './CyberpunkButton';
 
 
 const CompanySearch = () => {
