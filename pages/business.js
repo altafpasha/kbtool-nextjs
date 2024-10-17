@@ -1,17 +1,13 @@
 import React, { useState } from 'react';
-import { Client, Databases } from 'appwrite';
+import { createClient } from '@supabase/supabase-js';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from '../components/Footer'; // Adjust this path if necessary
 
-const client = new Client()
-    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
-    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
-
-const databases = new Databases(client);
-
-const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID;
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 const indianStates = [
   "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh",
@@ -118,29 +114,31 @@ const BusinessPage = () => {
 
     if (!isDataSaved) {
       try {
-        const response = await databases.createDocument(
-          DATABASE_ID,
-          COLLECTION_ID,
-          'unique()',
-          {
-            tradeName,
-            natureOfBusiness,
-            line1,
-            line2,
-            pinCode,
-            city,
-            state,
-            RegNo,
-            RegDate: formattedRegDate,
-            ExpiryDate: formattedExpiryDate,
-          }
-        );
-        console.log('Document created:', response);
+        const { data, error } = await supabase
+          .from('business_information')
+          .insert([
+            {
+              trade_name: tradeName,
+              nature_of_business: natureOfBusiness,
+              line1,
+              line2,
+              pin_code: pinCode,
+              city,
+              state,
+              reg_no: RegNo,
+              reg_date: RegDate,
+              expiry_date: ExpiryDate,
+            }
+          ]);
+
+        if (error) throw error;
+
+        console.log('Data inserted:', data);
         setIsDataSaved(true);
-        toast.success("Data converted.");
+        toast.success("Data saved successfully.");
       } catch (error) {
-        console.error('Error :', error);
-        toast.error(`Failed to converted : ${error.message}`);
+        console.error('Error saving data:', error);
+        toast.error(`Failed to save data: ${error.message}`);
       }
     }
   };

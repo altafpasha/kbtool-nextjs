@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
-import { Client, Databases } from 'appwrite';
+import { createClient } from '@supabase/supabase-js';
 
-const client = new Client();
-client
-    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
-    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
-
-const databases = new Databases(client);
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 const AdPopup = ({ onClose }) => {
   const [email, setEmail] = useState('');
@@ -20,17 +18,21 @@ const AdPopup = ({ onClose }) => {
     }
 
     try {
-      await databases.createDocument(
-        process.env.NEXT_PUBLIC_APPWRITE_EMAIL_DATABASE_ID,
-        process.env.NEXT_PUBLIC_APPWRITE_EMAIL_COLLECTION_ID,
-        'unique()',
-        { email: email }
-      );
+      const { data, error } = await supabase
+        .from('email_subscribers')
+        .insert([{ email: email }]);
+
+      if (error) throw error;
+
       setMessage('Thank you! You will be notified when the app launches on the Play Store.');
       setEmail('');
     } catch (error) {
       console.error('Error storing email:', error);
-      setMessage('An error occurred. Please try again later.');
+      if (error.code === '23505') {
+        setMessage('This email is already subscribed. Thank you for your interest!');
+      } else {
+        setMessage('An error occurred. Please try again later.');
+      }
     }
   };
 
@@ -38,9 +40,9 @@ const AdPopup = ({ onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white bg-opacity-20 backdrop-filter backdrop-blur-lg rounded-3xl shadow-xl max-w-md w-full p-8 relative border border-white border-opacity-30">
         <div className="flex flex-col items-center">
-          <img 
-            src="/img/ic_launcher.png" 
-            alt="Appship Logo" 
+          <img
+            src="/img/ic_launcher.png"
+            alt="Appship Logo"
             className="w-24 h-24 mb-4 rounded-full shadow-lg"
           />
           <h1 className="text-4xl font-bold mb-2 text-white tracking-wide">Appship</h1>
@@ -51,15 +53,15 @@ const AdPopup = ({ onClose }) => {
           </p>
           <form onSubmit={handleSubmit} className="w-full max-w-sm">
             <div className="flex items-center border-b border-yellow-400 py-2">
-              <input 
+              <input
                 className="appearance-none bg-transparent border-none w-full text-white mr-3 py-1 px-2 leading-tight focus:outline-none placeholder-white placeholder-opacity-75"
-                type="email" 
-                placeholder="Enter your email" 
+                type="email"
+                placeholder="Enter your email"
                 aria-label="Email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
-              <button 
+              <button
                 className="flex-shrink-0 bg-yellow-400 hover:bg-yellow-500 text-indigo-900 font-bold py-2 px-4 rounded-full transition duration-300 ease-in-out transform hover:scale-105"
                 type="submit"
               >
