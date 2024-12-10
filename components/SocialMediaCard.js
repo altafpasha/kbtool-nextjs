@@ -164,7 +164,7 @@ const SocialMediaCard = () => {
             <span className="text-xl ml-2 text-gray-400">/month</span>
           </p>
           <p className="text-sm text-gray-400">
-            Support innovation and unlock premium features
+            Support innovation and unlock premium features including KBTool
           </p>
         </div>
 
