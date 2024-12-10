@@ -1,149 +1,263 @@
-import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabaseClient';
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
-
-const CompactExtensionPopup = ({ onClose }) => {
-  const [email, setEmail] = useState('');
-  const [message, setMessage] = useState('');
+const SubscriptionPopup = ({ onClose }) => {
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [pollResult, setPollResult] = useState(null);
+  const [interestPercentage, setInterestPercentage] = useState(null);
+  const [totalInterestedVotes, setTotalInterestedVotes] = useState(0);
+  const [totalNotInterestedVotes, setTotalNotInterestedVotes] = useState(0);
+  const [showFeedbackForm, setShowFeedbackForm] = useState(false);
+  const [feedbackName, setFeedbackName] = useState('');
+  const [feedbackReason, setFeedbackReason] = useState('');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!email) {
-      setMessage('Please enter your email.');
-      return;
-    }
+  // Fetch initial poll statistics
+  useEffect(() => {
+    const fetchPollStats = async () => {
+      try {
+        const { count: totalVotes, error: countError } = await supabase
+          .from('pro_tool_poll')
+          .select('*', { count: 'exact' });
 
+        const { count: interestedVotes, error: interestedError } = await supabase
+          .from('pro_tool_poll')
+          .select('*', { count: 'exact' })
+          .eq('interested', true);
+
+        const { count: notInterestedVotes, error: notInterestedError } = await supabase
+          .from('pro_tool_poll')
+          .select('*', { count: 'exact' })
+          .eq('interested', false);
+
+        if (countError || interestedError || notInterestedError) {
+          throw (countError || interestedError || notInterestedError);
+        }
+
+        // Calculate percentage of interested votes
+        const percentage = totalVotes > 0 
+          ? Math.round((interestedVotes / totalVotes) * 100) 
+          : null;
+        
+        setInterestPercentage(percentage);
+        setTotalInterestedVotes(interestedVotes);
+        setTotalNotInterestedVotes(notInterestedVotes);
+      } catch (error) {
+        console.error('Error fetching poll statistics:', error);
+      }
+    };
+
+    fetchPollStats();
+  }, [pollResult]);
+
+  const handlePollVote = async (interested) => {
     setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('email_subscribers')
+        .from('pro_tool_poll')
         .insert([{ 
-          email: email,
+          interested: interested,
           created_at: new Date().toISOString()
         }]);
 
       if (error) throw error;
-      setMessage('Thanks for subscribing! Check your email for updates.');
-      setEmail('');
+
+      setPollResult(interested);
+      
+      if (!interested) {
+        setShowFeedbackForm(true);
+        setMessage(
+            "We're sorry to hear you're not interested. Help us improve by sharing why.\n\n" +
+            "Unfortunately, due to a significant number of users opting out, we are unable to continue offering the KBTool for free. This service may be discontinued entirely in the coming days. Thank you for your understanding."
+        );
+      } else {
+        setMessage(
+          "Thank you for your interest! We're excited to share more about our Pro tools soon."
+        );
+      }
     } catch (error) {
       console.error('Error:', error);
-      setMessage(error.code === '23505' ? 'This email is already subscribed!' : 'An error occurred. Please try again.');
+      setMessage('An error occurred. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFeedbackSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { data, error } = await supabase
+        .from('pro_tool_feedback')
+        .insert([{ 
+          name: feedbackName,
+          reason: feedbackReason,
+          created_at: new Date().toISOString()
+        }]);
+
+      if (error) throw error;
+
+      setMessage('Thank you for your feedback! We appreciate your help in improving our service.');
+      setShowFeedbackForm(false);
+      setFeedbackName('');
+      setFeedbackReason('');
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
+      setMessage('An error occurred while submitting feedback.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="relative bg-white/10 backdrop-blur-md rounded-2xl w-96 overflow-hidden border border-white/20 shadow-2xl">
+    <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="relative bg-white/10 backdrop-blur-md rounded-2xl w-full max-w-md overflow-hidden border border-white/20 shadow-2xl">
         {/* Top Decorative Bar */}
         <div className="h-1.5 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
         
         {/* Main Content */}
         <div className="p-6">
-          {/* Header */}
-          <h1 className="text-xl font-bold text-white text-center mb-6">Chrome Extensions Suite</h1>
-
-          {/* Image Rotater Section */}
-          <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                  </svg>
-                </div>
-                <div className="absolute -right-1 -top-1 w-4 h-4 bg-green-400 rounded-full border-2 border-white"></div>
-              </div>
+          {/* Subscription Alert Section */}
+          <div className="mb-6 bg-white/5 rounded-xl border border-white/10 p-5">
+            <div className="flex items-center space-x-4">
+              <svg className="w-10 h-10 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+              </svg>
               <div>
-                <h2 className="text-lg font-bold text-white">Image Rotater</h2>
-                <p className="text-xs text-white/70">Rotate any image easily</p>
+                <h2 className="text-lg font-bold text-white">Pro Subscription</h2>
+                <p className="text-xs text-white/70">
+                  Unlock Advanced Productivity Tools
+                </p>
               </div>
             </div>
-            <a
-              href="https://chromewebstore.google.com/detail/image-rotater/jbjjlmhmgbchakimnenfneabedeajpfo?authuser=1&hl=en"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white text-center py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
-            >
-              Add to Chrome
-            </a>
-          </div>
 
-          {/* OCR Translator Section */}
-          <div className="mb-6 p-4 bg-white/5 rounded-xl border border-white/10">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="relative">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center shadow-lg">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+            {/* Votes Count */}
+            {interestPercentage !== null && (
+              <div className="mt-4 flex justify-between items-center">
+                <div className="flex items-center space-x-2">
+                  <svg className="w-6 h-6 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.576 2.02L7 11H4a2 2 0 00-2 2v2a2 2 0 002 2h2.5" />
                   </svg>
+                  <span className="text-white/80 font-medium">{totalInterestedVotes}</span>
                 </div>
-                <div className="absolute -right-1 -top-1 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
-              </div>
-              <div>
-                <h2 className="text-lg font-bold text-white">OCR Translator</h2>
-                <p className="text-xs text-white/70">Extract & translate text from images</p>
-              </div>
-            </div>
-            <a
-              href="#"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block w-full bg-gradient-to-r from-purple-500 to-pink-600 text-white text-center py-2 rounded-lg font-medium hover:opacity-90 transition-opacity"
-            >
-              Coming Soon
-            </a>
-          </div>
-
-          {/* Email Subscription */}
-          <div className="space-y-3">
-            <p className="text-sm text-white/70 text-center">
-              Subscribe to get notified about new features and extensions!
-            </p>
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="relative">
-                <input
-                  type="email"
-                  placeholder="Enter your email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full bg-white/10 rounded-lg px-4 py-2 text-sm text-white placeholder-white/50 border border-white/10 focus:outline-none focus:border-white/30"
-                  disabled={loading}
-                />
-                {loading && (
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                    <svg className="w-5 h-5 animate-spin text-white/70" viewBox="0 0 24 24" fill="none">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-2 rounded-lg font-medium hover:opacity-90 transition-opacity disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {loading ? 'Subscribing...' : 'Subscribe for Updates'}
-                {!loading && (
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                <div className="flex items-center space-x-2">
+                  <svg className="w-6 h-6 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 016.447 3h4.836a2 2 0 011.789 2.894l-3.5 7A2 2 0 018.763 14H10zm0 0l4-8m-4 8v4a1 1 0 001 1h.5a1 1 0 001-1v-4m-3-6h6m-3 0l-.5-1H7l.5 1z" />
                   </svg>
-                )}
-              </button>
-            </form>
-            {message && (
-              <div className={`text-sm text-center ${message.includes('error') ? 'text-red-400' : 'text-green-400'}`}>
-                {message}
+                  <span className="text-white/80 font-medium">{totalNotInterestedVotes}</span>
+                </div>
               </div>
             )}
+
+            {/* Existing Subscription Content */}
+            <div className="mt-4 text-sm text-white/80">
+              <p className="mb-2">
+                Upgrade your productivity with our KB-Tool and AI-powered Pro Tools.
+              </p>
+              <ul className="list-disc list-inside space-y-1">
+                <li>Advanced AI features</li>
+                <li>AI-powered company insights</li>
+                <li>AI Image Translator for seamless communication</li>
+                <li>Continuous tool improvements</li>
+                <li>Priority support</li>
+              </ul>
+              <p className="mt-2">
+                We are actively building new tools and features to empower your productivity and enhance your skills. Your support and interest mean the world to us and help keep this service alive.
+              </p>
+              <p className="mt-2">
+                This service has been offered free for over 3 years, and we are working tirelessly to bring even more powerful features to you. With your feedback and interest, we can launch new innovations even sooner.
+              </p>
+              <p className="mt-2 text-xs text-white/60">
+                <strong className="text-yellow-400">Only ₹50/month</strong> to support ongoing innovation and gain access to these premium features and out KB-tool.
+              </p>
+            </div>
+
+
           </div>
+
+          {/* Feedback Form for Not Interested */}
+          {showFeedbackForm ? (
+            <form onSubmit={handleFeedbackSubmit} className="space-y-3">
+              <input 
+                type="text" 
+                placeholder="Your Name (Optional)" 
+                value={feedbackName}
+                onChange={(e) => setFeedbackName(e.target.value)}
+                className="w-full p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              <textarea 
+                placeholder="Why aren't you interested? (Optional)"
+                value={feedbackReason}
+                onChange={(e) => setFeedbackReason(e.target.value)}
+                className="w-full p-2 rounded-lg bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[100px]"
+              />
+              <button 
+                type="submit"
+                disabled={loading}
+                className="w-full bg-blue-500 text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+              >
+                {loading ? 'Submitting...' : 'Submit Feedback'}
+              </button>
+            </form>
+          ) : (
+            <div className="space-y-3">
+              <p className="text-sm text-white/70 text-center">
+                Are you interested in our Pro Tools?
+              </p>
+              <div className="flex space-x-4 justify-center">
+                <button
+                  onClick={() => handlePollVote(true)}
+                  disabled={loading || pollResult !== null}
+                  className="bg-green-500 text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  Interested
+                </button>
+                <button
+                  onClick={() => handlePollVote(false)}
+                  disabled={loading || pollResult !== null}
+                  className="bg-red-500 text-white px-6 py-2 rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+                >
+                  Not Interested
+                </button>
+              </div>
+            </div>
+          )}
+
+          {loading && (
+            <div className="flex justify-center mt-3">
+              <svg className="w-5 h-5 animate-spin text-white/70" viewBox="0 0 24 24" fill="none">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              </svg>
+            </div>
+          )}
+
+          {message && (
+            <div className={`text-sm text-center mt-3 ${pollResult === false ? 'text-red-400' : 'text-green-400'}`}>
+              {message}
+            </div>
+          )}
+
+          {/* Interest Percentage */}
+          {interestPercentage !== null && (
+            <div className="mt-4">
+              <div className="flex justify-between text-xs text-white/70 mb-1">
+                <span>Interested</span>
+                <span>{interestPercentage}%</span>
+              </div>
+              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                <div 
+                  className="bg-green-600 h-2.5 rounded-full transition-all duration-500 ease-in-out" 
+                  style={{ width: `${interestPercentage}%` }}
+                ></div>
+              </div>
+              <div className="flex justify-between text-xs text-white/70 mt-1">
+                <span>Not Interested</span>
+                <span>{100 - interestPercentage}%</span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Close Button */}
@@ -160,4 +274,4 @@ const CompactExtensionPopup = ({ onClose }) => {
   );
 };
 
-export default CompactExtensionPopup;
+export default SubscriptionPopup;

@@ -445,8 +445,9 @@ const Layout = ({ children }) => {
                 <CompanySearch />
               </div>
             </div>
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+ 
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
+          {/*   
           <div className={`${glassmorphismStyle} p-4`}>
             <h5 className="font-bold mb-2 text-white text-sm sm:text-base">Add Custom Comments Button in Database</h5>
             <div className="space-y-2">
@@ -472,7 +473,7 @@ const Layout = ({ children }) => {
               {error && <p className="text-red-500 mt-2">{error}</p>}
             </div>
           </div>
-
+*/}
               <div className={`${glassmorphismStyle} p-4`}>
                 <SocialMediaCard />
               </div>
