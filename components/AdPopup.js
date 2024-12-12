@@ -165,9 +165,7 @@ const SubscriptionPopup = ({ onClose }) => {
               <p className="mt-2">
                 We are actively building new tools and features to empower your productivity and enhance your skills. Your support and interest mean the world to us and help keep this service alive.
               </p>
-              <p className="mt-2">
-                This service has been offered free for over 3 years, and we are working tirelessly to bring even more powerful features to you. With your feedback and interest, we can launch new innovations even sooner.
-              </p>
+              
               <p className="mt-2 text-xs text-white/60">
                 <strong className="text-yellow-400">Only ₹50/month</strong> to support ongoing innovation and gain access to these premium features and out KB-tool.
               </p>
@@ -176,7 +174,7 @@ const SubscriptionPopup = ({ onClose }) => {
 
           </div>
 
-          {/* Feedback Form for Not Interested */}
+          {/* Feedback Form for Not Interested 
           {showFeedbackForm ? (
             <form onSubmit={handleFeedbackSubmit} className="space-y-3">
               <input 

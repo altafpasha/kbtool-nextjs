@@ -473,10 +473,9 @@ const Layout = ({ children }) => {
               {error && <p className="text-red-500 mt-2">{error}</p>}
             </div>
           </div>
-*/}
+
               <div className={`${glassmorphismStyle} p-4`}>
-                <SocialMediaCard />
-              </div>
+                <SocialMediaCard /> */}
             </div>
           </div>
         </div>
