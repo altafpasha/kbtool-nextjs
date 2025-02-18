@@ -11,6 +11,10 @@ import SocialMediaCard from '../components/SocialMediaCard';
 import AdPopup from './AdPopup';
 import NotificationPopup from './NotificationPopup';
 import SkewButton from './SkewButton';
+import TextCleanerTool from './TextCleanerTool';
+import Transaction from './Transaction';
+
+
 
 
 
@@ -99,81 +103,7 @@ const Layout = ({ children }) => {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const formatResult = (inputIds) => {
-    const idsArray = inputIds.trim().split(/[,\s]+/).filter(id => id !== '');
-    const idsCount = idsArray.length;
-    const idsOutput = idsArray.join(",");
-    
-    let result = '';
-    if (idsCount > 0) {
-      result = `${idsCount}:${idsOutput}`;
-      if (loanId) {
-        result = `${loanId}:${result}`;
-      }
-    }
-
-    return result;
-  };
-
-  const copyResult = (result) => {
-    if (result) {
-      navigator.clipboard.writeText(result).then(() => {
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      });
-    }
-
-    if (autoReset) {
-      setResetCounter(prev => prev + 1);
-      setTimeout(resetFields, 5000);
-    }
-  };
-
-  const resetFields = () => {
-    setLoanId('');
-    setIds('');
-    setOutput('Result will be displayed here');
-  };
-
-  const handleLoanIdChange = (e) => {
-    setLoanId(e.target.value);
-  };
-
-  const handleIdsChange = (e) => {
-    const newIds = e.target.value;
-    setIds(newIds);
-    if (autoMode) {
-      const newResult = formatResult(newIds);
-      setOutput(newResult);
-      copyResult(newResult);
-    }
-  };
-
-  const handlePaste = (e) => {
-    e.preventDefault();
-    const pastedText = e.clipboardData.getData('text');
-    setIds(pastedText);
-    if (autoMode) {
-      const newResult = formatResult(pastedText);
-      setOutput(newResult);
-      copyResult(newResult);
-    }
-  };
-
-  const handleKeyPress = (event) => {
-    if (event.key === 'Enter' && autoMode) {
-      const result = formatResult(ids);
-      setOutput(result);
-      copyResult(result);
-    }
-  };
-
-  const handleManualConvertAndCopy = () => {
-    const result = formatResult(ids);
-    setOutput(result);
-    copyResult(result);
-  };
-
+ 
   const addCustomComment = async () => {
     if (newCommentTitle && newCommentContent) {
       if (newCommentTitle.length > 10) {
@@ -252,6 +182,7 @@ const Layout = ({ children }) => {
   const toggleLabelStyle = `
     ml-3 text-sm font-medium text-gray-300
   `;
+
 
 
   return (
@@ -384,57 +315,7 @@ const Layout = ({ children }) => {
 
           <div className="lg:col-span-3 space-y-4">
             <div className={`${glassmorphismStyle} p-4`}>
-              <div className="space-y-2">
-                <input
-                  type="text"
-                  value={loanId}
-                  onChange={handleLoanIdChange}
-                  placeholder="QID 106 and 117"
-                  onKeyPress={handleKeyPress}
-                  className={`${inputStyle} w-full lg:w-40`}
-                />
-                <input
-                  type="text"
-                  value={ids}
-                  onChange={handleIdsChange}
-                  onPaste={handlePaste}
-                  placeholder="Enter transactions_id"
-                  onKeyPress={handleKeyPress}
-                  className={inputStyle}
-                />
-
-                <div className="flex flex-wrap gap-2 items-center">
-                  <Button onClick={handleManualConvertAndCopy} className="text-xs sm:text-sm">
-                    <i className="fas fa-copy"></i> Convert & Copy
-                  </Button>
-                  <Button onClick={resetFields} className="text-xs sm:text-sm">
-                    <i className="fas fa-redo"></i> Reset <span>{resetCounter}</span>
-                  </Button>
-                  <label className={toggleStyle}>
-                    <input 
-                      type="checkbox" 
-                      checked={autoMode} 
-                      onChange={() => setAutoMode(!autoMode)} 
-                      className="sr-only peer" 
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
-                    <span className={toggleLabelStyle}>{autoMode ? 'Auto' : 'Manual'}</span>
-                  </label>
-                  <label className={toggleStyle}>
-                    <input 
-                      type="checkbox" 
-                      checked={autoReset} 
-                      onChange={() => setAutoReset(!autoReset)} 
-                      className="sr-only peer" 
-                    />
-                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-purple-300 dark:peer-focus:ring-purple-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-purple-600"></div>
-                    <span className={toggleLabelStyle}>Auto-Reset</span>
-                  </label>
-                </div>
-              </div>
-              <div id="output" className={`${inputStyle} min-h-[50px] mt-2`}>
-                {output}
-              </div>
+              <Transaction />
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -447,36 +328,11 @@ const Layout = ({ children }) => {
             </div>
  
             <div className="grid grid-cols-1 lg:grid-cols-1 gap-4">
-          {/*   
-          <div className={`${glassmorphismStyle} p-4`}>
-            <h5 className="font-bold mb-2 text-white text-sm sm:text-base">Add Custom Comments Button in Database</h5>
-            <div className="space-y-2">
-              <input
-                type="text"
-                value={newCommentTitle}
-                onChange={(e) => setNewCommentTitle(e.target.value)}
-                placeholder="Button Title in Shortform (max 10 characters)"
-                className={inputStyle}
-                maxLength={10}
-              />
-              <textarea
-                value={newCommentContent}
-                onChange={(e) => setNewCommentContent(e.target.value)}
-                placeholder="Comment Content"
-                className={`${inputStyle} min-h-[100px]`}
-              />
-              <div className="flex flex-wrap gap-2">
-                <ZaubaButton onClick={addCustomComment} disabled={isLoading}>
-                  {isLoading ? 'Adding...' : 'Add Comment Button'}
-                </ZaubaButton>
-              </div>
-              {error && <p className="text-red-500 mt-2">{error}</p>}
+            <div className={`${glassmorphismStyle} p-4`}>
+              <TextCleanerTool />
             </div>
-          </div>
-
-              <div className={`${glassmorphismStyle} p-4`}>
-                <SocialMediaCard /> */}
             </div>
+             
           </div>
         </div>
       </div>
