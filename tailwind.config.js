@@ -6,35 +6,86 @@ const {
 
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  darkMode: 'class', // Enable dark mode using a class
+  darkMode: ['class', 'class'], // Enable dark mode using a class
   content: [
     './pages/**/*.{js,ts,jsx,tsx}',
     './components/**/*.{js,ts,jsx,tsx}',
   ],
   theme: {
-    extend: {
-      animation: {
-        moveBg: 'moveBg 5s ease infinite',
-      },
-      keyframes: {
-        moveBg: {
-          '0%': { 'background-position': '31% 0%' },
-          '50%': { 'background-position': '70% 100%' },
-          '100%': { 'background-position': '31% 0%' },
-        },
-      },
-      clipPath: {
-        button: 'polygon(0% 0.5em, 0.5em 0, 100% 0, 100% calc(100% - 0.5em), calc(100% - 0.5em) 100%, 0 100%)',
-        'button-hover': 'polygon(calc(100% - 0.125em) calc(100% - 0.625em), calc(100% - 0.125em) 0.125em, calc(100% - 0.125em) 0.125em, calc(100% - 0.125em) calc(100% - 0.625em), calc(100% - 0.625em) calc(0.125em), calc(100% - 0.625em) calc(0.125em))',
-      },
-      colors: {
-        'dark-bg': '#1a202c', // Custom dark background color
-        'dark-grid': '#2d3748', // Custom dark grid color
-      },
-      fontSize: {
-        medium: '1rem', // Customize this value as needed
-      },
-    },
+  	extend: {
+  		animation: {
+  			moveBg: 'moveBg 5s ease infinite'
+  		},
+  		keyframes: {
+  			moveBg: {
+  				'0%': {
+  					'background-position': '31% 0%'
+  				},
+  				'50%': {
+  					'background-position': '70% 100%'
+  				},
+  				'100%': {
+  					'background-position': '31% 0%'
+  				}
+  			}
+  		},
+  		clipPath: {
+  			button: 'polygon(0% 0.5em, 0.5em 0, 100% 0, 100% calc(100% - 0.5em), calc(100% - 0.5em) 100%, 0 100%)',
+  			'button-hover': 'polygon(calc(100% - 0.125em) calc(100% - 0.625em), calc(100% - 0.125em) 0.125em, calc(100% - 0.125em) 0.125em, calc(100% - 0.125em) calc(100% - 0.625em), calc(100% - 0.625em) calc(0.125em), calc(100% - 0.625em) calc(0.125em))'
+  		},
+  		colors: {
+  			'dark-bg': '#1a202c',
+  			'dark-grid': '#2d3748',
+  			background: 'hsl(var(--background))',
+  			foreground: 'hsl(var(--foreground))',
+  			card: {
+  				DEFAULT: 'hsl(var(--card))',
+  				foreground: 'hsl(var(--card-foreground))'
+  			},
+  			popover: {
+  				DEFAULT: 'hsl(var(--popover))',
+  				foreground: 'hsl(var(--popover-foreground))'
+  			},
+  			primary: {
+  				DEFAULT: 'hsl(var(--primary))',
+  				foreground: 'hsl(var(--primary-foreground))'
+  			},
+  			secondary: {
+  				DEFAULT: 'hsl(var(--secondary))',
+  				foreground: 'hsl(var(--secondary-foreground))'
+  			},
+  			muted: {
+  				DEFAULT: 'hsl(var(--muted))',
+  				foreground: 'hsl(var(--muted-foreground))'
+  			},
+  			accent: {
+  				DEFAULT: 'hsl(var(--accent))',
+  				foreground: 'hsl(var(--accent-foreground))'
+  			},
+  			destructive: {
+  				DEFAULT: 'hsl(var(--destructive))',
+  				foreground: 'hsl(var(--destructive-foreground))'
+  			},
+  			border: 'hsl(var(--border))',
+  			input: 'hsl(var(--input))',
+  			ring: 'hsl(var(--ring))',
+  			chart: {
+  				'1': 'hsl(var(--chart-1))',
+  				'2': 'hsl(var(--chart-2))',
+  				'3': 'hsl(var(--chart-3))',
+  				'4': 'hsl(var(--chart-4))',
+  				'5': 'hsl(var(--chart-5))'
+  			}
+  		},
+  		fontSize: {
+  			medium: '1rem'
+  		},
+  		borderRadius: {
+  			lg: 'var(--radius)',
+  			md: 'calc(var(--radius) - 2px)',
+  			sm: 'calc(var(--radius) - 4px)'
+  		}
+  	}
   },
   plugins: [
     require('@tailwindcss/forms'),
@@ -71,7 +122,8 @@ module.exports = {
         { values: flattenColorPalette(theme("backgroundColor")), type: "color" }
       );
     },
-  ],
+      require("tailwindcss-animate")
+],
 };
 
 function addVariablesForColors({ addBase, theme }) {

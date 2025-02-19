@@ -1,97 +1,138 @@
 import React from 'react';
 import Link from 'next/link';
-import { Home, Github, Linkedin, Twitter, Instagram, Wrench } from 'lucide-react';
+import Image from 'next/image';
 import { useRouter } from 'next/router';
+import { 
+  Home, 
+  Github, 
+  Linkedin, 
+  Twitter, 
+  Instagram, 
+  Wrench,
+  Chrome
+} from 'lucide-react';
 
 const Footer = () => {
   const router = useRouter();
-
   const isActivePage = (path) => router.pathname === path;
 
-  return (
-    <footer className="bg-purple-900 bg-opacity-50 backdrop-blur-md border-t border-purple-800 p-6 text-gray-100">
-      <div className="container mx-auto flex flex-col sm:flex-row items-center justify-between">
-        <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4 mb-4 sm:mb-0">
-          <div className="border border-purple-600 rounded-lg p-2 flex flex-wrap justify-center sm:justify-start gap-2">
-            <Link href="/" passHref>
-              <span className="flex items-center hover:text-white cursor-pointer px-2 py-1">
-                <Home className="w-5 h-5 mr-2" />
-                Home
-              </span>
-            </Link>
-            <Link href="/business" passHref>
-              <span className={`px-2 py-1 rounded-md cursor-pointer ${
-                isActivePage('/business')
-                  ? 'bg-purple-600 text-white'
-                  : 'hover:bg-purple-700 hover:text-white'
-              }`}>
-                Business-Tool
-              </span>
-            </Link>
-            <Link href="/QID_121" passHref>
-              <span className={`px-2 py-1 rounded-md cursor-pointer ${
-                isActivePage('/QID_121')
-                  ? 'bg-purple-600 text-white'
-                  : 'hover:bg-purple-700 hover:text-white'
-              }`}>
-                QID_121
-              </span>
-            </Link>
-          </div>
-        </div>
+  const NavLink = ({ href, children, isExternal }) => {
+    const baseClasses = "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 hover:bg-white/10 text-white";
+    
+    if (isExternal) {
+      return (
+        <a 
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={baseClasses}
+        >
+          {children}
+        </a>
+      );
+    }
+    
+    return (
+      <Link href={href} passHref>
+        <span className={`${baseClasses} ${
+          isActivePage(href) ? 'bg-white/20' : ''
+        }`}>
+          {children}
+        </span>
+      </Link>
+    );
+  };
 
-        <div className="border border-purple-600 rounded-lg p-2 mb-4 sm:mb-0">
+  const SocialIcon = ({ href, icon: Icon }) => (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="p-2 rounded-full hover:bg-white/10 transition-all duration-300"
+    >
+      <Icon className="w-5 h-5 text-white" />
+    </a>
+  );
+
+  return (
+    <footer className="relative backdrop-blur-md bg-purple-900/30 border-t border-purple-400/20">
+      <div className="absolute inset-0 bg-gradient-to-b from-purple-600/5 to-pink-500/5" />
+      
+      <div className="relative container mx-auto px-4 py-6">
+        <div className="flex flex-col gap-8 md:gap-6 lg:flex-row lg:items-center lg:justify-between">
+          {/* Logo */}
+          <div className="flex items-center">
+            <Image
+              src="/logo/appship-full.png"
+              alt="Appship Logo"
+              width={150}
+              height={40}
+              className="object-contain"
+            />
+          </div>
+
+          {/* Navigation Links */}
+          <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+            <NavLink href="/">
+              <Home className="w-5 h-5" />
+              <span>Home</span>
+            </NavLink>
+            <NavLink href="/business">
+              <Wrench className="w-5 h-5" />
+              <span>Business-Tool</span>
+            </NavLink>
+            <NavLink href="/QID_121">
+              <span>QID_121</span>
+            </NavLink>
+          </div>
+
+          {/* Chrome Extension Button */}
           <a
-            href="https://appship.me"
+            href="https://chromewebstore.google.com/search/codesec"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center hover:text-purple-400 transition-colors duration-300"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/50 to-pink-500/50 rounded-lg hover:from-purple-500/70 hover:to-pink-500/70 transition-all duration-300 backdrop-blur-sm"
           >
-            <Wrench className="w-4 h-4 mr-2" />
-            Visit Appship for more tools
+            <Chrome className="w-5 h-5" />
+            <span>Get Chrome Extension</span>
           </a>
-        </div>
 
-        <div className="text-center sm:text-right mb-4 sm:mb-0">
-          <p className="text-sm">
-            <a
-              href="https://appship.me"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-purple-400 transition-colors duration-300"
-            >
-              Appship
-            </a> &copy; 2021 - Powered by{' '}
-            <a
-              href="https://codesec.me"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-purple-400 transition-colors duration-300"
-            >
-              CodeSec
-            </a>
-          </p>
-          <p className="text-sm mt-1">
-            Developed by{' '}
-            <span className="font-semibold bg-gradient-to-r from-purple-400 to-pink-500 text-transparent bg-clip-text">
-              Altaf
-            </span>
-          </p>
-        </div>
+          {/* Company Info */}
+          <div className="text-center lg:text-right">
+            <p className="text-sm text-white">
+              <a
+                href="https://appship.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-purple-200 transition-colors"
+              >
+                Appship
+              </a>{' '}
+              &copy; {new Date().getFullYear()} - Powered by{' '}
+              <a
+                href="https://codesec.me"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-purple-300 transition-colors"
+              >
+                CodeSec
+              </a>
+            </p>
+            <p className="text-sm mt-1 text-white">
+              Developed by{' '}
+              <span className="font-semibold text-purple-700">
+                Altaf
+              </span>
+            </p>
+          </div>
 
-        <div className="flex items-center space-x-4">
-          <a href="https://github.com/imaltaf" target="_blank" rel="noopener noreferrer" className="hover:text-white">
-            <Github className="w-5 h-5" />
-          </a>
-          <a href="https://www.linkedin.com/in/altaf-pasha/" target="_blank" rel="noopener noreferrer" className="hover:text-white">
-            <Linkedin className="w-5 h-5" />
-          </a>
-          <a href="https://www.instagram.com/altaf_90s?igsh=a3phcXAwaHNlbWFj" target="_blank" rel="noopener noreferrer" className="hover:text-white">
-            <Instagram className="w-5 h-5" />
-          </a>
-          <a href="https://x.com/Dark_Mechanic" target="_blank" rel="noopener noreferrer" className="hover:text-white">
-            <Twitter className="w-5 h-5" />
-          </a>
+          {/* Social Links */}
+          <div className="flex items-center justify-center gap-2">
+            <SocialIcon href="https://github.com/imaltaf" icon={Github} />
+            <SocialIcon href="https://www.linkedin.com/in/altaf-pasha/" icon={Linkedin} />
+            <SocialIcon href="https://www.instagram.com/altaf_90s?igsh=a3phcXAwaHNlbWFj" icon={Instagram} />
+            <SocialIcon href="https://x.com/Dark_Mechanic" icon={Twitter} />
+          </div>
         </div>
       </div>
     </footer>

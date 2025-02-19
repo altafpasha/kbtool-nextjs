@@ -14,11 +14,7 @@ const Transaction = () => {
   const [duplicateIds, setDuplicateIds] = useState([]);
 
   // Styles with fixed z-index and positioning
-  const containerStyle = `
-    relative
-    dark:bg-white bg-black 
-    dark:bg-dot-black/[0.2] bg-dot-white/[0.2]
-  `;
+ 
 
   const glassmorphismStyle = `
     relative
@@ -144,7 +140,7 @@ const Transaction = () => {
   };
 
   return (
-    <div className={containerStyle}>
+    
       <div className="p-4 space-y-4">
         {/* Notification Area with higher z-index */}
         <div className="fixed top-4 left-1/2 transform -translate-x-1/2 z-50 w-full max-w-md px-4">
@@ -177,7 +173,7 @@ const Transaction = () => {
           </div>
         )}
         
-        <div className={`${glassmorphismStyle} p-4`}>
+        
           {/* Background decoration with lower z-index */}
           <span className="absolute inset-0 rounded-lg bg-[image:radial-gradient(75%_100%_at_50%_0%,rgba(128,90,213,0.6)_0%,rgba(128,90,213,0)_75%)] opacity-50 z-0" />
           
@@ -234,8 +230,8 @@ const Transaction = () => {
           </div>
           <span className="absolute bottom-0 left-4 h-px w-[calc(100%-2rem)] bg-gradient-to-r from-purple-400/0 via-purple-400/90 to-purple-400/0 transition-opacity duration-500 z-0" />
         </div>
-      </div>
-    </div>
+      
+   
   );
 };
 

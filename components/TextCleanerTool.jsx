@@ -62,7 +62,7 @@ const SpecialCharacterRemover = () => {
   };
 
   return (
-    <div className="flex items-center justify-center w-full p-4">
+    
       <div className="max-w-md w-full backdrop-blur-lg bg-white/20 rounded-2xl shadow-2xl p-8 relative overflow-visible border border-white/30">
         <div className="absolute -top-3 -right-3 z-20">
           <span className="bg-gradient-to-r from-green-400 to-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
@@ -113,7 +113,7 @@ const SpecialCharacterRemover = () => {
           </div>
         </div>
       </div>
-    </div>
+   
   );
 };
 
