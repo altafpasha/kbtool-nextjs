@@ -3,6 +3,8 @@ import ZaubaButton from './ZaubaButton';
 import ResetButton from './ResetButton';
 import CyberpunkButton from './CyberpunkButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const CompanySearch = () => {
   const [companyName, setCompanyName] = useState('');
@@ -11,6 +13,7 @@ const CompanySearch = () => {
   const [searchHistory, setSearchHistory] = useState([]);
   const [showPopupWarning, setShowPopupWarning] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [showAllHistory, setShowAllHistory] = useState(false);
 
   // Load search history from localStorage on component mount
   useEffect(() => {
@@ -123,91 +126,126 @@ const CompanySearch = () => {
     }
   }, [showPopupWarning]);
 
+  // Get the display history based on showAllHistory state
+  const displayHistory = showAllHistory ? searchHistory : searchHistory.slice(0, 4);
+
   return (
-    <div className="p-6 relative">
-      <h1 className="text-gray-300 text-2xl font-bold mb-4">Company Search Engine</h1>
+    <Card className="bg-black/50 border-white/10">
+      <CardHeader>
+        <CardTitle className="text-gray-300">Company Search Engine</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {showPopupWarning && (
+          <Alert className="bg-yellow-500/10 text-yellow-200 border-yellow-500/50">
+            <AlertDescription>
+              Please allow popup windows for this site to use the multi-search feature.
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {showPopupWarning && (
-        <Alert className="mb-4 bg-yellow-500/10 text-yellow-200 border-yellow-500/50">
-          <AlertDescription>
-            Please allow popup windows for this site to use the multi-search feature.
-          </AlertDescription>
-        </Alert>
-      )}
+        {showSuccess && (
+          <Alert className="bg-green-500/10 text-green-200 border-green-500/50">
+            <AlertDescription>
+              Successfully opened all search tabs!
+            </AlertDescription>
+          </Alert>
+        )}
 
-      {showSuccess && (
-        <Alert className="mb-4 bg-green-500/10 text-green-200 border-green-500/50">
-          <AlertDescription>
-            Successfully opened all search tabs!
-          </AlertDescription>
-        </Alert>
-      )}
-
-      <div className="relative">
-        <input
-          type="text"
-          className="p-2 w-full mb-4 rounded bg-transparent text-white border border-white/20"
-          placeholder="Enter Company Name"
-          value={companyName}
-          onChange={(e) => setCompanyName(e.target.value)}
-          onKeyPress={handleKeyPress}
-          disabled={isLoading}
-        />
-        {companyName && <button className="absolute right-2 top-2" onClick={handleReset}>×</button>}
-      </div>
-
-      {error && <p className="text-red-500 mb-4 text-sm">{error}</p>}
-
-      <div className="flex flex-wrap gap-2 mb-4">
-        <ResetButton onClick={handleReset} disabled={isLoading}>Reset</ResetButton>
-        <ZaubaButton onClick={() => handleSearch('all')} disabled={isLoading}>Open All Tabs</ZaubaButton>
-        {Object.keys(getUrlMap('')).map(key => (
-          <ZaubaButton 
-            key={key} 
-            onClick={() => handleSearch(key)} 
+        <div className="relative">
+          <input
+            type="text"
+            className="p-2 w-full rounded bg-transparent text-white border border-white/20"
+            placeholder="Enter Company Name"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+            onKeyPress={handleKeyPress}
             disabled={isLoading}
-            data-search={key}
-          >
-            {key}
-          </ZaubaButton>
-        ))}
-      </div>
+          />
+          {companyName && (
+            <button 
+              className="absolute right-2 top-2 text-gray-400 hover:text-white" 
+              onClick={handleReset}
+            >
+              ×
+            </button>
+          )}
+        </div>
 
-      {searchHistory.length > 0 && (
-        <div className="mt-6">
-          <h2 className="text-gray-400 text-sm mb-2">Recent Searches</h2>
-          {searchHistory.map((search, index) => (
-            <div key={index} className="mb-2">
-              <div className="text-gray-400 text-sm py-1 px-2 hover:bg-white/5 rounded cursor-pointer flex items-center justify-between">
-                <span onClick={() => handleHistoryItemClick(search)}>
-                  {search.name} 
-                  <span className="text-gray-500 text-xs ml-2">
-                    {new Date(search.timestamp).toLocaleTimeString()}
-                  </span>
-                </span>
-                <div className="flex gap-2">
-                  <button 
-                    className="text-xs text-blue-400 hover:text-blue-300"
-                    onClick={() => handleHistoryItemClick(search, 'all')}
-                  >
-                    Open All
-                  </button>
-                  {Object.keys(getUrlMap('')).map(key => (
-                    <button
-                      key={key}
-                      className="text-xs text-blue-400 hover:text-blue-300"
-                      onClick={() => handleHistoryItemClick(search, key)}
-                    >
-                      {key}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
+        {error && <p className="text-red-500 text-sm">{error}</p>}
+
+        <div className="flex flex-wrap gap-2">
+          <ResetButton onClick={handleReset} disabled={isLoading}>Reset</ResetButton>
+          <ZaubaButton onClick={() => handleSearch('all')} disabled={isLoading}>Open All Tabs</ZaubaButton>
+          {Object.keys(getUrlMap('')).map(key => (
+            <ZaubaButton 
+              key={key} 
+              onClick={() => handleSearch(key)} 
+              disabled={isLoading}
+              data-search={key}
+            >
+              {key}
+            </ZaubaButton>
           ))}
         </div>
-      )}
-    </div>
+
+        {searchHistory.length > 0 && (
+          <Card className="relative backdrop-blur-md bg-white/5 border-white/10 overflow-hidden">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <CardTitle className="text-gray-400 text-sm">Recent Searches</CardTitle>
+              {searchHistory.length > 4 && (
+                <button
+                  onClick={() => setShowAllHistory(!showAllHistory)}
+                  className="text-xs text-blue-400 hover:text-blue-300"
+                >
+                  {showAllHistory ? 'Show Less' : 'Show More'}
+                </button>
+              )}
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-full max-h-[280px] overflow-y-auto rounded-md">
+                <div className="space-y-2 pr-4">
+                  {displayHistory.map((search, index) => (
+                    <div 
+                      key={index}
+                      className="text-gray-400 text-sm py-2 px-3 hover:bg-white/10 rounded-lg transition-colors duration-200 backdrop-blur-sm"
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <span 
+                          onClick={() => handleHistoryItemClick(search)}
+                          className="flex items-center cursor-pointer"
+                        >
+                          {search.name}
+                          <span className="text-gray-500 text-xs ml-2">
+                            {new Date(search.timestamp).toLocaleTimeString()}
+                          </span>
+                        </span>
+                        <div className="flex flex-wrap gap-2">
+                          <button 
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                            onClick={() => handleHistoryItemClick(search, 'all')}
+                          >
+                            Open All
+                          </button>
+                          {Object.keys(getUrlMap('')).map(key => (
+                            <button
+                              key={key}
+                              className="text-xs text-blue-400 hover:text-blue-300"
+                              onClick={() => handleHistoryItemClick(search, key)}
+                            >
+                              {key}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        )}
+      </CardContent>
+    </Card>
   );
 };
 
