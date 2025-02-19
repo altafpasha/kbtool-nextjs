@@ -327,9 +327,7 @@ const Layout = ({ children }) => {
               </Card>
             </div>
 
-            <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border-white/10 shadow-lg">
-              <TextCleanerTool />
-            </Card>
+            
           </div>
         </div>
       </div>

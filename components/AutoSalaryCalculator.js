@@ -1,12 +1,21 @@
-import React, { useState, useEffect } from 'react';
+'use client';
+import React, { useState, useEffect, useRef } from 'react';
 
-const AutoSalaryCalculator = () => {
+const CombinedCalculator = () => {
+  // Salary Calculator States
   const [salariesInput, setSalariesInput] = useState('');
   const [averageResult, setAverageResult] = useState('');
   const [autoCopied, setAutoCopied] = useState('');
   const [totalSalary, setTotalSalary] = useState(0);
   const [salaryCount, setSalaryCount] = useState(0);
 
+  // Special Character Remover States
+  const [input, setInput] = useState('');
+  const [showCopied, setShowCopied] = useState(false);
+  const [autoCopy, setAutoCopy] = useState(false);
+  const inputRef = useRef(null);
+
+  // Salary Calculator Effects
   useEffect(() => {
     if (averageResult.startsWith('Average Salary: ')) {
       navigator.clipboard.writeText(averageResult.replace('Average Salary: ', ''))
@@ -16,7 +25,6 @@ const AutoSalaryCalculator = () => {
             setAutoCopied('');
           }, 3000);
 
-          // Auto reset after 5 seconds
           const resetTimer = setTimeout(() => {
             setSalariesInput('');
             setAverageResult('');
@@ -33,6 +41,7 @@ const AutoSalaryCalculator = () => {
     }
   }, [averageResult]);
 
+  // Salary Calculator Functions
   const calculateAverage = (input) => {
     const salaries = input.split(/[,\s]+/).map(parseFloat).filter(value => !isNaN(value));
     if (salaries.length === 0) {
@@ -48,13 +57,13 @@ const AutoSalaryCalculator = () => {
     setSalaryCount(salaries.length);
   };
 
-  const handleChange = (e) => {
+  const handleSalaryChange = (e) => {
     const newValue = e.target.value.replace(/[^0-9,\s]/g, '');
     setSalariesInput(newValue);
     calculateAverage(newValue);
   };
 
-  const handlePaste = (e) => {
+  const handleSalaryPaste = (e) => {
     e.preventDefault();
     const pastedData = e.clipboardData.getData('text').replace(/[^0-9,\s]/g, '');
     const newValue = salariesInput + pastedData;
@@ -62,54 +71,137 @@ const AutoSalaryCalculator = () => {
     calculateAverage(newValue);
   };
 
-  const inputStyle = `
-    bg-transparent
-    border border-purple-300/20
-    text-white
-    placeholder-purple-200/40
-    rounded-lg
-    px-4 py-3
-    w-full
-    focus:outline-none
-    focus:ring-2
-    focus:ring-purple-500/50
-    focus:border-transparent
-    transition-all duration-300 ease-in-out
-    backdrop-blur-sm
-    shadow-inner
-    text-sm
-    font-medium
-    hover:border-purple-400/30
-  `;
+  // Special Character Remover Functions
+  const cleanText = (text) => {
+    return text.replace(/[^a-zA-Z0-9]/g, ' ').replace(/\s+/g, ' ').trim();
+  };
+
+  const handleInputChange = (e) => {
+    const newText = e.target.value;
+    const cleaned = cleanText(newText);
+    setInput(cleaned);
+    
+    if (autoCopy && cleaned) {
+      navigator.clipboard.writeText(cleaned).then(() => {
+        showCopyNotification();
+        setTimeout(() => setInput(''), 500);
+      });
+    }
+  };
+
+  const handleCharacterPaste = (e) => {
+    e.preventDefault();
+    navigator.clipboard.readText().then(pastedText => {
+      const cleaned = cleanText(pastedText);
+      setInput(cleaned);
+      
+      if (autoCopy && cleaned) {
+        navigator.clipboard.writeText(cleaned).then(() => {
+          showCopyNotification();
+          setTimeout(() => setInput(''), 500);
+        });
+      }
+    });
+  };
+
+  const copyToClipboard = () => {
+    if (input) {
+      navigator.clipboard.writeText(input).then(() => {
+        showCopyNotification();
+        setTimeout(() => setInput(''), 500);
+      });
+    }
+  };
+
+  const showCopyNotification = () => {
+    setShowCopied(true);
+    setTimeout(() => setShowCopied(false), 2000);
+  };
+
+  const toggleAutoCopy = () => {
+    setAutoCopy(!autoCopy);
+  };
 
   return (
-    <div className="p-4 relative">
-      <h3 className="text-lg text-gray-300 font-bold mb-2">Auto Salary Average Calculator</h3>
-      <div className="mb-2">
-        <input
-          type="text"
-          value={salariesInput}
-          onChange={handleChange}
-          onPaste={handlePaste}
-          className={inputStyle}
-          placeholder="Enter salaries (numbers only)"
-        />
-      </div>
-      <div id="auto-copied" className="text-purple-500 mb-2">{autoCopied}</div>
-      <div id="result" className="text-lg font-bold text-gray-300">{averageResult}</div>
-      <div className="text-sm text-gray-400 mt-2">
-        Total Salary: {totalSalary.toFixed(0)}
-        <br />
-        Number of Salaries: {salaryCount}
-      </div>
-      {averageResult && (
-        <div className="text-xs text-gray-500 mt-2">
-          Auto-reset in 5 seconds...
+    <div className="max-w-4xl mx-auto p-8 space-y-8">
+      {/* Salary Calculator Section */}
+      <div className="backdrop-blur-lg bg-white/20 rounded-2xl shadow-2xl p-8 relative border border-white/30">
+        <h2 className="text-2xl font-bold mb-6 text-white">Salary Calculator</h2>
+        <div className="space-y-4">
+          <input
+            type="text"
+            value={salariesInput}
+            onChange={handleSalaryChange}
+            onPaste={handleSalaryPaste}
+            className="w-full p-4 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            placeholder="Enter salaries (numbers only)"
+          />
+          <div className="text-purple-500">{autoCopied}</div>
+          <div className="text-lg font-bold text-white">{averageResult}</div>
+          <div className="text-sm text-gray-200">
+            Total Salary: {totalSalary.toFixed(0)}
+            <br />
+            Number of Salaries: {salaryCount}
+          </div>
+          {averageResult && (
+            <div className="text-xs text-gray-300">
+              Auto-reset in 5 seconds...
+            </div>
+          )}
         </div>
-      )}
-      <span className="absolute bottom-0 left-4 h-px w-[calc(100%-2rem)] bg-gradient-to-r from-purple-400/0 via-purple-400/90 to-purple-400/0 transition-opacity duration-500" />
+      </div>
+
+      {/* Special Character Remover Section */}
+      <div className="backdrop-blur-lg bg-white/20 rounded-2xl shadow-2xl p-8 relative border border-white/30">
+        <div className="absolute -top-3 -right-3 z-20">
+          <span className="bg-gradient-to-r from-green-400 to-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+            New
+          </span>
+        </div>
+
+        <h2 className="text-2xl font-bold mb-6 text-white">Special Character Remover</h2>
+        
+        <div className="flex items-center justify-between mb-4">
+          <div 
+            className="flex items-center gap-2 cursor-pointer"
+            onClick={toggleAutoCopy}
+          >
+            <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 bg-white/30 hover:bg-white/40">
+              <div className={`absolute h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${
+                autoCopy ? 'translate-x-[22px]' : 'translate-x-0.5'
+              }`} />
+            </div>
+            <span className="text-sm font-medium text-white select-none">
+              {autoCopy ? 'Auto-copy ON' : 'Auto-copy OFF'}
+            </span>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <textarea
+            ref={inputRef}
+            value={input}
+            onChange={handleInputChange}
+            onPaste={handleCharacterPaste}
+            className="w-full p-4 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            rows={4}
+            placeholder="Type or paste text here..."
+          />
+
+          {!autoCopy && (
+            <button
+              onClick={copyToClipboard}
+              className="w-full bg-white/20 text-white py-3 px-4 rounded-xl hover:bg-white/30 transition-colors border border-white/30 backdrop-blur-sm group relative"
+            >
+              <span className="inline-block transition-transform duration-200 group-hover:scale-105">
+                {showCopied ? 'Copied!' : 'Copy Clean Text'}
+              </span>
+            </button>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
 
-export default AutoSalaryCalculator;
+export default CombinedCalculator;
