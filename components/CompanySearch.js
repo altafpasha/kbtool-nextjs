@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import ZaubaButton from './ZaubaButton';
 import ResetButton from './ResetButton';
-import CyberpunkButton from './CyberpunkButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -14,6 +13,7 @@ const CompanySearch = () => {
   const [showPopupWarning, setShowPopupWarning] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
   const [showAllHistory, setShowAllHistory] = useState(false);
+  const [showRecentSearches, setShowRecentSearches] = useState(true);
 
   // Load search history from localStorage on component mount
   useEffect(() => {
@@ -40,12 +40,43 @@ const CompanySearch = () => {
 
   const sanitizeInput = (input) => input.replace(/[^a-zA-Z0-9\s]/g, '').trim();
 
-  const openUrlWithFallback = (url) => {
-    const newWindow = window.open(url, '_blank');
-    if (!newWindow || newWindow.closed || typeof newWindow.closed === 'undefined') {
-      setShowPopupWarning(true);
+  const openMultipleUrls = async (urls) => {
+    try {
+      // Create an array of promises for opening each URL
+      const openPromises = urls.map((url) => {
+        return new Promise((resolve) => {
+          const link = document.createElement('a');
+          link.href = url;
+          link.target = '_blank';
+          link.rel = 'noopener noreferrer';
+          document.body.appendChild(link);
+          
+          // Use setTimeout to create a slight delay between clicks
+          setTimeout(() => {
+            link.click();
+            document.body.removeChild(link);
+            resolve(true);
+          }, 100);
+        });
+      });
+
+      // Wait for all URLs to be processed
+      await Promise.all(openPromises);
+      return true;
+    } catch (error) {
+      console.error('Error opening URLs:', error);
       return false;
     }
+  };
+
+  const openUrlWithFallback = (url) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
     return true;
   };
 
@@ -78,16 +109,15 @@ const CompanySearch = () => {
       const urlMap = getUrlMap(sanitizedName);
 
       if (query === 'all') {
-        const buttons = Object.keys(urlMap);
-        for (const button of buttons) {
-          const buttonElement = document.querySelector(`button[data-search="${button}"]`);
-          if (buttonElement) {
-            buttonElement.click();
-            await new Promise(resolve => setTimeout(resolve, 300));
-          }
+        const urls = Object.values(urlMap);
+        const success = await openMultipleUrls(urls);
+        
+        if (success) {
+          setShowSuccess(true);
+          setTimeout(() => setShowSuccess(false), 3000);
+        } else {
+          setShowPopupWarning(true);
         }
-        setShowSuccess(true);
-        setTimeout(() => setShowSuccess(false), 3000);
       } else {
         openUrlWithFallback(urlMap[query]);
       }
@@ -175,7 +205,12 @@ const CompanySearch = () => {
 
         <div className="flex flex-wrap gap-2">
           <ResetButton onClick={handleReset} disabled={isLoading}>Reset</ResetButton>
-          <ZaubaButton onClick={() => handleSearch('all')} disabled={isLoading}>Open All Tabs</ZaubaButton>
+          <ZaubaButton 
+            onClick={() => handleSearch('all')} 
+            disabled={isLoading}
+          >
+            {isLoading ? 'Opening...' : 'Open All Tabs'}
+          </ZaubaButton>
           {Object.keys(getUrlMap('')).map(key => (
             <ZaubaButton 
               key={key} 
@@ -189,8 +224,30 @@ const CompanySearch = () => {
         </div>
 
         {searchHistory.length > 0 && (
-          <Card className="relative backdrop-blur-md bg-white/5 border-white/10 overflow-hidden">
-            <CardHeader className="flex flex-row items-center justify-between">
+          <div className="relative">            
+            <button
+              onClick={() => setShowRecentSearches(!showRecentSearches)}
+              className="absolute -top-8 right-0 text-gray-400 hover:text-white text-sm flex items-center gap-1"
+            >
+              {showRecentSearches ? (
+                <>
+                  <span>Hide Recent</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
+                  </svg>
+                </>
+              ) : (
+                <>
+                  <span>Show Recent</span>
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
+                  </svg>
+                </>
+              )}
+            </button>
+            {showRecentSearches && (
+              <Card className="relative backdrop-blur-md bg-white/5 border-white/10 overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between">
               <CardTitle className="text-gray-400 text-sm">Recent Searches</CardTitle>
               {searchHistory.length > 4 && (
                 <button
@@ -242,7 +299,9 @@ const CompanySearch = () => {
                 </div>
               </ScrollArea>
             </CardContent>
-          </Card>
+              </Card>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>
