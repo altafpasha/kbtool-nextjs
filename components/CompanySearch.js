@@ -42,29 +42,30 @@ const CompanySearch = () => {
 
   const openMultipleUrls = async (urls) => {
     try {
-      // Create an array of promises for opening each URL
-      const openPromises = urls.map((url) => {
-        return new Promise((resolve) => {
+      // Open URLs sequentially with a longer delay
+      for (const url of urls) {
+        await new Promise((resolve) => {
           const link = document.createElement('a');
           link.href = url;
           link.target = '_blank';
           link.rel = 'noopener noreferrer';
           document.body.appendChild(link);
           
-          // Use setTimeout to create a slight delay between clicks
           setTimeout(() => {
-            link.click();
-            document.body.removeChild(link);
-            resolve(true);
-          }, 100);
+            try {
+              link.click();
+              document.body.removeChild(link);
+              resolve(true);
+            } catch (err) {
+              console.error(`Error opening URL ${url}:`, err);
+              resolve(false);
+            }
+          }, 300); // Increased delay to 300ms
         });
-      });
-
-      // Wait for all URLs to be processed
-      await Promise.all(openPromises);
+      }
       return true;
     } catch (error) {
-      console.error('Error opening URLs:', error);
+      console.error('Error in openMultipleUrls:', error);
       return false;
     }
   };
