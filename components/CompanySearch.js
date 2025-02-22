@@ -171,7 +171,7 @@ const CompanySearch = () => {
         {showPopupWarning && (
           <Alert className="bg-yellow-500/10 text-yellow-200 border-yellow-500/50">
             <AlertDescription>
-              "Open All Tabs Fixed" - Please allow popup windows for this site to use the multi-search feature.
+              &quot;Open All Tabs Fixed&quot; - Please allow popup windows for this site to use the multi-search feature.
             </AlertDescription>
           </Alert>
         )}
