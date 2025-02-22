@@ -12,7 +12,7 @@ const CombinedCalculator = () => {
   // Special Character Remover States
   const [input, setInput] = useState('');
   const [showCopied, setShowCopied] = useState(false);
-  const [autoCopy, setAutoCopy] = useState(false);
+  const [autoCopy, setAutoCopy] = useState(true);
   const inputRef = useRef(null);
 
   // Salary Calculator Effects

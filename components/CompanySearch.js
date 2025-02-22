@@ -15,12 +15,14 @@ const CompanySearch = () => {
   const [showAllHistory, setShowAllHistory] = useState(false);
   const [showRecentSearches, setShowRecentSearches] = useState(true);
 
-  // Load search history from localStorage on component mount
+  // Load search history and show popup warning on component mount
   useEffect(() => {
     const savedHistory = localStorage.getItem('searchHistory');
     if (savedHistory) {
       setSearchHistory(JSON.parse(savedHistory));
     }
+    // Show popup warning immediately
+    setShowPopupWarning(true);
   }, []);
 
   const getUrlMap = (sanitizedName) => ({
@@ -169,7 +171,7 @@ const CompanySearch = () => {
         {showPopupWarning && (
           <Alert className="bg-yellow-500/10 text-yellow-200 border-yellow-500/50">
             <AlertDescription>
-              Please allow popup windows for this site to use the multi-search feature.
+              "Open All Tabs Fixed" - Please allow popup windows for this site to use the multi-search feature.
             </AlertDescription>
           </Alert>
         )}
