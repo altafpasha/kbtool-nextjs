@@ -125,7 +125,7 @@ const CombinedCalculator = () => {
   return (
     <div className="max-w-4xl mx-auto p-8 space-y-8">
       {/* Salary Calculator Section */}
-      <div className="backdrop-blur-lg bg-white/20 rounded-2xl shadow-2xl p-8 relative border border-white/30">
+      <div className="backdrop-blur-lg bg-slate-800/30 border border-slate-700/50 rounded-2xl shadow-2xl p-8 relative ">
         <h2 className="text-2xl font-bold mb-6 text-white">Salary Calculator</h2>
         <div className="space-y-4">
           <input
@@ -133,7 +133,7 @@ const CombinedCalculator = () => {
             value={salariesInput}
             onChange={handleSalaryChange}
             onPaste={handleSalaryPaste}
-            className="w-full p-4 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full bg-slate-700/30 border-slate-600/50  p-4 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             placeholder="Enter salaries (numbers only)"
           />
           <div className="text-purple-500">{autoCopied}</div>
@@ -152,7 +152,7 @@ const CombinedCalculator = () => {
       </div>
 
       {/* Special Character Remover Section */}
-      <div className="backdrop-blur-lg bg-white/20 rounded-2xl shadow-2xl p-8 relative border border-white/30">
+      <div className="backdrop-blur-lg bg-slate-800/30 border border-slate-700/50 rounded-2xl shadow-2xl p-8 relative ">
         <div className="absolute -top-3 -right-3 z-20">
           <span className="bg-gradient-to-r from-green-400 to-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
             New
@@ -183,7 +183,7 @@ const CombinedCalculator = () => {
             value={input}
             onChange={handleInputChange}
             onPaste={handleCharacterPaste}
-            className="w-full p-4 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full p-4 bg-white/10 bg-slate-700/30 border-slate-600/50  border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             rows={4}
             placeholder="Type or paste text here..."
           />

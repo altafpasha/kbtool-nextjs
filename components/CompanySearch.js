@@ -4,6 +4,7 @@ import ResetButton from './ResetButton';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { ScrollArea } from "@/components/ui/scroll-area";
+import CompanySearchGlass from './CompanySearchGlass';
 
 const CompanySearch = () => {
   const [companyName, setCompanyName] = useState('');
@@ -225,87 +226,8 @@ const CompanySearch = () => {
             </ZaubaButton>
           ))}
         </div>
-
-        {searchHistory.length > 0 && (
-          <div className="relative">            
-            <button
-              onClick={() => setShowRecentSearches(!showRecentSearches)}
-              className="absolute -top-8 right-0 text-gray-400 hover:text-white text-sm flex items-center gap-1"
-            >
-              {showRecentSearches ? (
-                <>
-                  <span>Hide Recent</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M14.707 12.707a1 1 0 01-1.414 0L10 9.414l-3.293 3.293a1 1 0 01-1.414-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 010 1.414z" clipRule="evenodd" />
-                  </svg>
-                </>
-              ) : (
-                <>
-                  <span>Show Recent</span>
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" />
-                  </svg>
-                </>
-              )}
-            </button>
-            {showRecentSearches && (
-              <Card className="relative backdrop-blur-md bg-white/5 border-white/10 overflow-hidden">
-                <CardHeader className="flex flex-row items-center justify-between">
-              <CardTitle className="text-gray-400 text-sm">Recent Searches</CardTitle>
-              {searchHistory.length > 4 && (
-                <button
-                  onClick={() => setShowAllHistory(!showAllHistory)}
-                  className="text-xs text-blue-400 hover:text-blue-300"
-                >
-                  {showAllHistory ? 'Show Less' : 'Show More'}
-                </button>
-              )}
-            </CardHeader>
-            <CardContent>
-              <ScrollArea className="h-full max-h-[280px] overflow-y-auto rounded-md">
-                <div className="space-y-2 pr-4">
-                  {displayHistory.map((search, index) => (
-                    <div 
-                      key={index}
-                      className="text-gray-400 text-sm py-2 px-3 hover:bg-white/10 rounded-lg transition-colors duration-200 backdrop-blur-sm"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                        <span 
-                          onClick={() => handleHistoryItemClick(search)}
-                          className="flex items-center cursor-pointer"
-                        >
-                          {search.name}
-                          <span className="text-gray-500 text-xs ml-2">
-                            {new Date(search.timestamp).toLocaleTimeString()}
-                          </span>
-                        </span>
-                        <div className="flex flex-wrap gap-2">
-                          <button 
-                            className="text-xs text-blue-400 hover:text-blue-300"
-                            onClick={() => handleHistoryItemClick(search, 'all')}
-                          >
-                            Open All
-                          </button>
-                          {Object.keys(getUrlMap('')).map(key => (
-                            <button
-                              key={key}
-                              className="text-xs text-blue-400 hover:text-blue-300"
-                              onClick={() => handleHistoryItemClick(search, key)}
-                            >
-                              {key}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </ScrollArea>
-            </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
+        <CompanySearchGlass />
+        
       </CardContent>
     </Card>
   );
