@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Footer from '../components/Footer'; // Adjust this path if necessary
+import Footer from '../components/Footer';
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
+
+// HillTopAds container component
+const AdContainer = () => (
+  <div id="hilltop-ad-container" style={{ minHeight: '250px', margin: '20px auto' }}></div>
 );
 
 const indianStates = [
@@ -159,6 +164,12 @@ const BusinessPage = () => {
     <div className="min-h-screen bg-black text-white font-sans flex flex-col">
       <div className="flex-grow">
         <div className="container mx-auto px-4 py-8">
+          {/* Display ad at the top */}
+          <AdContainer />
+          
+          {/* Push ad below the header */}
+          <AdContainer />
+
           <div className="bg-gradient-to-br from-purple-900/30 to-black rounded-3xl shadow-2xl p-8 border border-purple-500/30 backdrop-blur-sm">
             <h1 className="text-4xl font-bold mb-8 text-center text-purple-300">Business Information</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -284,6 +295,9 @@ const BusinessPage = () => {
             </div>
           </div>
         </div>
+      </div>
+      <div className="mb-8">
+        <AdContainer />
       </div>
       <Footer />
       <ToastContainer position="bottom-right" theme="dark" />
