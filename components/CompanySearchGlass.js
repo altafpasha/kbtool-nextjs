@@ -24,7 +24,7 @@ const CompanySearchGlass = () => {
   const handleCompareSearch = (e) => {
     e.preventDefault();
     if (companyOne.trim() && companyTwo.trim()) {
-      const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(`${companyOne} ${companyTwo} relationship parent company subsidiary merger acquisition`)}&source=llmSuggest&summary=1&lang=en-in`;
+      const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(`${companyOne} ${companyTwo} is this both company are same organization`)}&source=llmSuggest&summary=1&lang=en-in`;
       window.open(searchUrl, '_blank');
     }
   };
@@ -32,7 +32,7 @@ const CompanySearchGlass = () => {
   const handleNewsSearch = (e) => {
     e.preventDefault();
     if (newsCompany.trim()) {
-      const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(`${newsCompany} india news press media defence military foreign investment`)}&source=llmSuggest&summary=1&lang=en-in`;
+      const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(`${newsCompany} is this company a news media or news company`)}&source=llmSuggest&summary=1&lang=en-in`;
       window.open(searchUrl, '_blank');
     }
   };
@@ -57,7 +57,7 @@ const CompanySearchGlass = () => {
               <AlertTriangle className="h-5 w-5 text-red-400" />
             </div>
             <AlertDescription className="text-sm">
-              <span className="font-semibold">Disclaimer:</span> AI search results may not be accurate. We are not responsible for decisions made based on this information. Please verify all critical data independently.
+              <span className="font-semibold">Disclaimer:</span> AI search results may not be accurate. We are not responsible for decisions made based on this information.
             </AlertDescription>
           </div>
         </Alert>
