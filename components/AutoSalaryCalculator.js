@@ -133,7 +133,7 @@ const CombinedCalculator = () => {
             value={salariesInput}
             onChange={handleSalaryChange}
             onPaste={handleSalaryPaste}
-            className="w-full bg-slate-700/30 border-slate-600/50  p-4 bg-white/10 border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full bg-slate-700/30 border-slate-600/50  p-4 border border-white/30 rounded-xl text-white  focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             placeholder="Enter salaries (numbers only)"
           />
           <div className="text-purple-500">{autoCopied}</div>
@@ -166,12 +166,12 @@ const CombinedCalculator = () => {
             className="flex items-center gap-2 cursor-pointer"
             onClick={toggleAutoCopy}
           >
-            <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 bg-white/30 hover:bg-white/40">
+            <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300  bg-slate-700/30 hover:bg-white/40">
               <div className={`absolute h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${
                 autoCopy ? 'translate-x-[22px]' : 'translate-x-0.5'
               }`} />
             </div>
-            <span className="text-sm font-medium text-white select-none">
+            <span className="text-sm font-medium  text-white select-none">
               {autoCopy ? 'Auto-copy ON' : 'Auto-copy OFF'}
             </span>
           </div>
@@ -183,7 +183,7 @@ const CombinedCalculator = () => {
             value={input}
             onChange={handleInputChange}
             onPaste={handleCharacterPaste}
-            className="w-full p-4 bg-white/10 bg-slate-700/30 border-slate-600/50  border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full p-4  bg-slate-700/30 border-slate-600/50  border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
             rows={4}
             placeholder="Type or paste text here..."
           />

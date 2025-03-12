@@ -98,15 +98,9 @@ const BusinessPage = () => {
       return;
     }
 
-    const formattedRegDate = formatDate(RegDate);
-    const formattedExpiryDate = formatDate(ExpiryDate);
+    // Dates are already in YYYY-MM-DD format from the input field
 
-    if (!validateDate(formattedRegDate) || !validateDate(formattedExpiryDate)) {
-      toast.error("Invalid date format. Please use DD/MM/YYYY format.");
-      return;
-    }
-
-    const formattedText = `Trade Name/Name of Business: ${tradeName} | Nature of Business/Line of Business/Type of Business: ${natureOfBusiness} | Line1: ${line1} | Line2: ${line2} | PinCode: ${pinCode} | City: ${city} | State: ${state} | RegNo: ${RegNo} | RegDate: ${formattedRegDate} | ExpiryDate: ${formattedExpiryDate}`;
+    const formattedText = `Trade Name/Name of Business: ${tradeName} | Nature of Business/Line of Business/Type of Business: ${natureOfBusiness} | Line1: ${line1} | Line2: ${line2} | PinCode: ${pinCode} | City: ${city} | State: ${state} | RegNo: ${RegNo} | RegDate: ${RegDate} | ExpiryDate: ${ExpiryDate}`;
 
     setFormattedContent(formattedText);
     navigator.clipboard.writeText(formattedText);
@@ -115,19 +109,19 @@ const BusinessPage = () => {
     if (!isDataSaved) {
       try {
         const { data, error } = await supabase
-          .from('business_information')
+          .from('businesses')
           .insert([
             {
               trade_name: tradeName,
               nature_of_business: natureOfBusiness,
-              line1,
-              line2,
+              address_line1: line1,
+              address_line2: line2,
               pin_code: pinCode,
               city,
               state,
-              reg_no: RegNo,
-              reg_date: RegDate,
-              expiry_date: ExpiryDate,
+              registration_number: RegNo,
+              registration_date: RegDate,
+              expiry_date: ExpiryDate
             }
           ]);
 
@@ -135,10 +129,10 @@ const BusinessPage = () => {
 
         console.log('Data inserted:', data);
         setIsDataSaved(true);
-        toast.success("Data saved successfully.");
+        toast.success("Done.");
       } catch (error) {
         console.error('Error saving data:', error);
-        toast.error(`Failed to save data: ${error.message}`);
+        toast.error(`Error: ${error.message}`);
       }
     }
   };

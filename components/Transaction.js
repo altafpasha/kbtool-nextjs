@@ -184,7 +184,7 @@ const Transaction = () => {
               onChange={handleLoanIdChange}
               placeholder="QID 106 and 117"
               onKeyPress={handleKeyPress}
-              className={`${inputStyle} w-full lg:w-40`}
+              className={`${inputStyle} bg-slate-700/30 border-slate-600/50  border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent lg:w-40`}
             />
             <input
               type="text"
@@ -193,7 +193,7 @@ const Transaction = () => {
               onPaste={handlePaste}
               placeholder="Enter transactions_id"
               onKeyPress={handleKeyPress}
-              className={inputStyle}
+              className={`${inputStyle} w-full p-4  bg-slate-700/30 border-slate-600/50  border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent`}
             />
 
             <div className="flex flex-wrap gap-2 items-center relative z-10">
