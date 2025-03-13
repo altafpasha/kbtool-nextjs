@@ -1,25 +1,25 @@
 import React, { useState } from 'react';
-import { createClient } from '@supabase/supabase-js';
+import { Client, Databases } from 'appwrite';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Footer from '../components/Footer';
+import Footer from '../components/Footer'; // Adjust this path if necessary
 
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
+const client = new Client()
+    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
+    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
 
-// HillTopAds container component
-const AdContainer = () => (
-  <div id="hilltop-ad-container" style={{ minHeight: '250px', margin: '20px auto' }}></div>
-);
+const databases = new Databases(client);
+
+const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
+const COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID;
 
 const indianStates = [
   "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh",
   "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", "Gujarat", "Haryana",
-  "Himachal Pradesh", "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep", "Madhya Pradesh",
-  "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry", "Punjab",
-  "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"
+  "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep",
+  "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Puducherry",
+  "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand",
+  "West Bengal"
 ];
 
 const removeSpecialCharacters = (inputString) => {
@@ -103,9 +103,15 @@ const BusinessPage = () => {
       return;
     }
 
-    // Dates are already in YYYY-MM-DD format from the input field
+    const formattedRegDate = formatDate(RegDate);
+    const formattedExpiryDate = formatDate(ExpiryDate);
 
-    const formattedText = `Trade Name/Name of Business: ${tradeName} | Nature of Business/Line of Business/Type of Business: ${natureOfBusiness} | Line1: ${line1} | Line2: ${line2} | PinCode: ${pinCode} | City: ${city} | State: ${state} | RegNo: ${RegNo} | RegDate: ${RegDate} | ExpiryDate: ${ExpiryDate}`;
+    if (!validateDate(formattedRegDate) || !validateDate(formattedExpiryDate)) {
+      toast.error("Invalid date format. Please use DD/MM/YYYY format.");
+      return;
+    }
+
+    const formattedText = `Trade Name/Name of Business: ${tradeName} | Nature of Business/Line of Business/Type of Business: ${natureOfBusiness} | Line1: ${line1} | Line2: ${line2} | PinCode: ${pinCode} | City: ${city} | State: ${state} | RegNo: ${RegNo} | RegDate: ${formattedRegDate} | ExpiryDate: ${formattedExpiryDate}`;
 
     setFormattedContent(formattedText);
     navigator.clipboard.writeText(formattedText);
@@ -113,31 +119,29 @@ const BusinessPage = () => {
 
     if (!isDataSaved) {
       try {
-        const { data, error } = await supabase
-          .from('businesses')
-          .insert([
-            {
-              trade_name: tradeName,
-              nature_of_business: natureOfBusiness,
-              address_line1: line1,
-              address_line2: line2,
-              pin_code: pinCode,
-              city,
-              state,
-              registration_number: RegNo,
-              registration_date: RegDate,
-              expiry_date: ExpiryDate
-            }
-          ]);
-
-        if (error) throw error;
-
-        console.log('Data inserted:', data);
+        const response = await databases.createDocument(
+          DATABASE_ID,
+          COLLECTION_ID,
+          'unique()',
+          {
+            tradeName,
+            natureOfBusiness,
+            line1,
+            line2,
+            pinCode,
+            city,
+            state,
+            RegNo,
+            RegDate: formattedRegDate,
+            ExpiryDate: formattedExpiryDate,
+          }
+        );
+        console.log('Document created:', response);
         setIsDataSaved(true);
-        toast.success("Done.");
+        toast.success("Data converted.");
       } catch (error) {
-        console.error('Error saving data:', error);
-        toast.error(`Error: ${error.message}`);
+        console.error('Error :', error);
+        toast.error(`Failed to converted : ${error.message}`);
       }
     }
   };
@@ -164,12 +168,6 @@ const BusinessPage = () => {
     <div className="min-h-screen bg-black text-white font-sans flex flex-col">
       <div className="flex-grow">
         <div className="container mx-auto px-4 py-8">
-          {/* Display ad at the top */}
-          <AdContainer />
-          
-          {/* Push ad below the header */}
-          <AdContainer />
-
           <div className="bg-gradient-to-br from-purple-900/30 to-black rounded-3xl shadow-2xl p-8 border border-purple-500/30 backdrop-blur-sm">
             <h1 className="text-4xl font-bold mb-8 text-center text-purple-300">Business Information</h1>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -295,9 +293,6 @@ const BusinessPage = () => {
             </div>
           </div>
         </div>
-      </div>
-      <div className="mb-8">
-        <AdContainer />
       </div>
       <Footer />
       <ToastContainer position="bottom-right" theme="dark" />
