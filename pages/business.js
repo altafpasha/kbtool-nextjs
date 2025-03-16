@@ -1,17 +1,9 @@
 import React, { useState } from 'react';
-import { Client, Databases } from 'appwrite';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import Footer from '../components/Footer'; // Adjust this path if necessary
-
-const client = new Client()
-    .setEndpoint(process.env.NEXT_PUBLIC_APPWRITE_ENDPOINT)
-    .setProject(process.env.NEXT_PUBLIC_APPWRITE_PROJECT_ID);
-
-const databases = new Databases(client);
-
-const DATABASE_ID = process.env.NEXT_PUBLIC_APPWRITE_DATABASE_ID;
-const COLLECTION_ID = process.env.NEXT_PUBLIC_APPWRITE_COLLECTION_ID;
+import Footer from '../components/Footer';
+import { supabase } from '../lib/supabaseClient';
+import { queueService } from '../lib/queueService';
 
 const indianStates = [
   "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh",
@@ -28,24 +20,58 @@ const removeSpecialCharacters = (inputString) => {
 
 const validateDate = (dateString) => {
   const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
-  if (!regex.test(dateString)) return false;
+  if (!regex.test(dateString)) {
+    return false;
+  }
 
-  const [, day, month, year] = dateString.match(regex);
+  const [month, day, year] = dateString.split('/');
 
-  if (parseInt(month, 10) < 1 || parseInt(month, 10) > 12) return false;
-  if (parseInt(day, 10) < 1 || parseInt(day, 10) > 31) return false;
+  const monthNum = parseInt(month, 10);
+  const dayNum = parseInt(day, 10);
+  const yearNum = parseInt(year, 10);
 
-  if (parseInt(month, 10) === 2) {
-    const isLeapYear = (parseInt(year, 10) % 4 === 0 && parseInt(year, 10) % 100 !== 0) || parseInt(year, 10) % 400 === 0;
-    if (parseInt(day, 10) > (isLeapYear ? 29 : 28)) return false;
+  if (monthNum < 1 || monthNum > 12) {
+    return false;
+  }
+  if (dayNum < 1 || dayNum > 31) {
+    return false;
+  }
+
+  // Check days in month
+  if (monthNum === 2) {
+    const isLeapYear = (yearNum % 4 === 0 && yearNum % 100 !== 0) || yearNum % 400 === 0;
+    if (dayNum > (isLeapYear ? 29 : 28)) {
+      return false;
+    }
+  } else if ([4, 6, 9, 11].includes(monthNum) && dayNum > 30) {
+    return false;
   }
 
   return true;
 };
 
 const formatDate = (inputDate) => {
+  if (!inputDate) return '';
+  if (inputDate.includes('/')) return inputDate; // Already in MM/DD/YYYY format
+  
+  // Convert from YYYY-MM-DD to MM/DD/YYYY
   const [year, month, day] = inputDate.split('-');
-  return `${day}/${month}/${year}`;
+  return `${month}/${day}/${year}`;
+};
+
+const checkDuplicate = async (regNo, tradeName) => {
+  const { data, error } = await supabase
+    .from('businesses')
+    .select('id')
+    .eq('reg_no', regNo)
+    .eq('trade_name', tradeName)
+    .single();
+
+  if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
+    throw error;
+  }
+
+  return !!data;
 };
 
 const BusinessPage = () => {
@@ -64,6 +90,7 @@ const BusinessPage = () => {
   });
   const [formattedContent, setFormattedContent] = useState('');
   const [isDataSaved, setIsDataSaved] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleInputChange = (e) => {
     const { id, value } = e.target;
@@ -73,6 +100,36 @@ const BusinessPage = () => {
       newValue = removeSpecialCharacters(value);
     } else if (id === 'pinCode') {
       newValue = value.replace(/\D/g, '').slice(0, 6);
+    } else if (id === 'RegDate' || id === 'ExpiryDate') {
+      // Remove any non-digit and non-slash characters
+      newValue = value.replace(/[^\d/]/g, '');
+      
+      // Split the string by slashes
+      const parts = newValue.split('/');
+      
+      // Handle each part separately
+      if (parts[0] && parts[0].length > 2) {
+        parts[0] = parts[0].slice(0, 2);
+      }
+      if (parts[1] && parts[1].length > 2) {
+        parts[1] = parts[1].slice(0, 2);
+      }
+      if (parts[2] && parts[2].length > 4) {
+        parts[2] = parts[2].slice(0, 4);
+      }
+      
+      // Join parts back together
+      newValue = parts.join('/');
+      
+      // Add slashes automatically
+      if (value.length === 2 && !value.includes('/') && parseInt(value) <= 12) {
+        newValue = value + '/';
+      } else if (value.length === 5 && value.split('/').length === 2) {
+        const [month, day] = value.split('/');
+        if (parseInt(day) <= 31) {
+          newValue = value + '/';
+        }
+      }
     }
 
     setFormData(prevData => ({ ...prevData, [id]: newValue }));
@@ -81,6 +138,7 @@ const BusinessPage = () => {
     }
   };
 
+  // Add state validation to match schema constraints
   const handleStateInputChange = (inputText) => {
     const filteredSuggestions = indianStates.filter(state => 
       state.toLowerCase().includes(inputText.toLowerCase())
@@ -93,56 +151,116 @@ const BusinessPage = () => {
     setSuggestions([]);
   };
 
+  // Generate formatted text based on form data - exactly matching required schema
+  const generateFormattedText = () => {
+    const {
+      tradeName, natureOfBusiness, line1, line2, pinCode, city, state, RegNo, RegDate, ExpiryDate
+    } = formData;
+    
+    return `Trade Name/Name of Business: ${tradeName} | Nature of Business/Line of Business/Type of Business: ${natureOfBusiness} | Line1: ${line1} | Line2: ${line2} | PinCode: ${pinCode} | City: ${city} | State: ${state} | RegNo: ${RegNo} | RegDate: ${RegDate} | ExpiryDate: ${ExpiryDate}`;
+  };
+
   const handleCopyButtonClick = async () => {
+    if (isProcessing) {
+      toast.info('Please wait while processing...');
+      return;
+    }
+
     const {
       tradeName, natureOfBusiness, line1, line2, pinCode, city, state, RegNo, RegDate, ExpiryDate
     } = formData;
 
-    if (!tradeName || !natureOfBusiness || !line1 || !line2 || !pinCode || !city || !state || !RegNo || !RegDate || !ExpiryDate) {
-      toast.error("Please fill in all the required fields.");
+    // Validate all required fields from schema
+    if (!tradeName || !natureOfBusiness || !line1 || !pinCode || !city || !state || !RegNo || !RegDate || !ExpiryDate) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
-    const formattedRegDate = formatDate(RegDate);
-    const formattedExpiryDate = formatDate(ExpiryDate);
-
-    if (!validateDate(formattedRegDate) || !validateDate(formattedExpiryDate)) {
-      toast.error("Invalid date format. Please use DD/MM/YYYY format.");
+    // PIN code validation according to schema CHECK constraint
+    if (pinCode.length !== 6) {
+      toast.error('PIN code must be exactly 6 digits');
+      return;
+    }
+    
+    // State validation to match schema constraints
+    if (!indianStates.includes(state)) {
+      toast.error('Please select a valid Indian state from the suggestions');
       return;
     }
 
-    const formattedText = `Trade Name/Name of Business: ${tradeName} | Nature of Business/Line of Business/Type of Business: ${natureOfBusiness} | Line1: ${line1} | Line2: ${line2} | PinCode: ${pinCode} | City: ${city} | State: ${state} | RegNo: ${RegNo} | RegDate: ${formattedRegDate} | ExpiryDate: ${formattedExpiryDate}`;
+    const isRegDateValid = validateDate(RegDate);
+    const isExpiryDateValid = validateDate(ExpiryDate);
 
+    if (!isRegDateValid || !isExpiryDateValid) {
+      toast.error('Please enter valid dates in MM/DD/YYYY format');
+      return;
+    }
+
+    const formattedText = generateFormattedText();
+    // Update the formatted content in the textarea
     setFormattedContent(formattedText);
-    navigator.clipboard.writeText(formattedText);
-    toast.success("Content copied to clipboard!");
 
-    if (!isDataSaved) {
-      try {
-        const response = await databases.createDocument(
-          DATABASE_ID,
-          COLLECTION_ID,
-          'unique()',
+    try {
+      setIsProcessing(true);
+
+      // Check for duplicate before proceeding
+      const isDuplicate = await checkDuplicate(RegNo, tradeName);
+      
+      // Copy to clipboard immediately
+      await navigator.clipboard.writeText(formattedText);
+      
+      if (isDuplicate) {
+        toast.success('Text copied to clipboard! already ');
+        setIsProcessing(false);
+        return;
+      } else {
+        toast.success('Text copied to clipboard!');
+      }
+
+      // Convert dates from MM/DD/YYYY to YYYY-MM-DD for database
+      const convertDateFormat = (dateStr) => {
+        const [month, day, year] = dateStr.split('/');
+        return `${year}-${month}-${day}`;
+      };
+
+      // Insert data to Supabase according to schema
+      const { error } = await supabase
+        .from('businesses')
+        .insert([
           {
-            tradeName,
-            natureOfBusiness,
+            trade_name: tradeName,
+            nature_of_business: natureOfBusiness,
             line1,
-            line2,
-            pinCode,
+            line2: line2 || null, // Handle empty line2 as NULL
+            pin_code: pinCode,
             city,
             state,
-            RegNo,
-            RegDate: formattedRegDate,
-            ExpiryDate: formattedExpiryDate,
+            reg_no: RegNo,
+            reg_date: convertDateFormat(RegDate),
+            expiry_date: convertDateFormat(ExpiryDate)
           }
-        );
-        console.log('Document created:', response);
+        ]);
+
+      if (error) {
+        if (error.code === '23505') { // Postgres unique violation code
+          console.log('Duplicate entry detected');
+          toast.info('This record already exists ');
+        } else if (error.code === '23514') { // Check constraint violation
+          console.error('Constraint violation:', error);
+          toast.error('Data validation failed. Please check your inputs.');
+        } else {
+          console.error('Save failed:', error);
+          toast.error(`Failed to save record: ${error.message || 'Database error'}`);
+        }
+      } else {
         setIsDataSaved(true);
-        toast.success("Data converted.");
-      } catch (error) {
-        console.error('Error :', error);
-        toast.error(`Failed to converted : ${error.message}`);
+        toast.success('Copied successfully!');
       }
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error('Failed to process request');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -251,21 +369,23 @@ const BusinessPage = () => {
                 onChange={handleInputChange}
               />
               <div>
-                <label htmlFor="RegDate" className="text-purple-300 mb-2 block">Registration Date</label>
+                <label htmlFor="RegDate" className="text-purple-300 mb-2 block">Registration Date (MM/DD/YYYY)</label>
                 <input
-                  type="date"
+                  type="text"
                   id="RegDate"
                   className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
+                  placeholder="MM/DD/YYYY"
                   value={formData.RegDate}
                   onChange={handleInputChange}
                 />
               </div>
               <div>
-                <label htmlFor="ExpiryDate" className="text-purple-300 mb-2 block">Expiry Date</label>
+                <label htmlFor="ExpiryDate" className="text-purple-300 mb-2 block">Expiry Date (MM/DD/YYYY)</label>
                 <input
-                  type="date"
+                  type="text"
                   id="ExpiryDate"
                   className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
+                  placeholder="MM/DD/YYYY"
                   value={formData.ExpiryDate}
                   onChange={handleInputChange}
                 />
@@ -276,13 +396,15 @@ const BusinessPage = () => {
               rows="5"
               value={formattedContent}
               readOnly
+              placeholder="Formatted data will appear here after clicking 'Copy'"
             ></textarea>
             <div className="flex gap-4 mt-6">
               <button
                 onClick={handleCopyButtonClick}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105"
+                disabled={isProcessing}
+                className={`${isProcessing ? 'bg-purple-800' : 'bg-purple-600 hover:bg-purple-700'} text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out transform hover:scale-105`}
               >
-                Copy
+                {isProcessing ? 'Processing...' : 'Copy'}
               </button>
               <button
                 onClick={handleResetButtonClick}

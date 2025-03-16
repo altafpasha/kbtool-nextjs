@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Card } from './ui/card';
 import { Input } from './ui/input';
 import { Button } from './ui/button';
-import { Search, AlertTriangle, Building2, Newspaper, ArrowRight } from 'lucide-react';
+import { Search, AlertTriangle, Building2, Newspaper, ArrowRight, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Alert, AlertDescription } from './ui/alert';
@@ -34,6 +34,21 @@ const CompanySearchGlass = () => {
     if (newsCompany.trim()) {
       const searchUrl = `https://search.brave.com/search?q=${encodeURIComponent(`${newsCompany} is this company a news media or news company`)}&source=llmSuggest&summary=1&lang=en-in`;
       window.open(searchUrl, '_blank');
+    }
+  };
+
+  const handleReset = (type) => {
+    switch(type) {
+      case 'search':
+        setCompanyName('');
+        break;
+      case 'compare':
+        setCompanyOne('');
+        setCompanyTwo('');
+        break;
+      case 'news':
+        setNewsCompany('');
+        break;
     }
   };
 
@@ -112,12 +127,22 @@ const CompanySearchGlass = () => {
                     <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium shadow-lg shadow-indigo-700/20 transition-all hover:shadow-indigo-700/40"
-                  >
-                    Search Company
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="submit" 
+                      className="flex-1 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-medium shadow-lg shadow-indigo-700/20 transition-all hover:shadow-indigo-700/40"
+                    >
+                      Search Company
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => handleReset('search')}
+                      variant="outline"
+                      className="bg-slate-700/30 border-slate-600/50 hover:bg-slate-700/50"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </form>
               </div>
             </Card>
@@ -170,12 +195,22 @@ const CompanySearchGlass = () => {
                     </div>
                   </div>
                   
-                  <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium shadow-lg shadow-purple-700/20 transition-all hover:shadow-purple-700/40"
-                  >
-                    Check Relationship
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      type="submit" 
+                      className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium shadow-lg shadow-purple-700/20 transition-all hover:shadow-purple-700/40"
+                    >
+                      Compare Companies
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={() => handleReset('compare')}
+                      variant="outline"
+                      className="bg-slate-700/30 border-slate-600/50 hover:bg-slate-700/50"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  </div>
 
                   <div className="bg-purple-900/20 p-3 rounded-lg border border-purple-500/20">
                     <p className="text-xs text-slate-300">
@@ -218,25 +253,33 @@ const CompanySearchGlass = () => {
                     <Newspaper className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 h-5 w-5" />
                   </div>
                   
-                  <div className="space-y-2">
+                  <div className="flex gap-2">
                     <Button 
                       type="submit" 
-                      className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-medium shadow-lg shadow-blue-700/20 transition-all hover:shadow-blue-700/40"
+                      className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-medium shadow-lg shadow-blue-700/20 transition-all hover:shadow-blue-700/40"
                     >
-                      Search News & Media
+                      Check News Status
                     </Button>
-                    
-                    <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-500/20">
-                      <p className="text-xs text-slate-300">
-                        Identifies if the company is:
-                      </p>
-                      <ul className="text-xs text-slate-300 mt-1 grid grid-cols-2 gap-1">
-                        <li className="flex items-center"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 mr-1"></span> News organization</li>
-                        <li className="flex items-center"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 mr-1"></span> Media outlet</li>
-                        <li className="flex items-center"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 mr-1"></span> Defense connection</li>
-                        <li className="flex items-center"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 mr-1"></span> Foreign investment</li>
-                      </ul>
-                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => handleReset('news')}
+                      variant="outline"
+                      className="bg-slate-700/30 border-slate-600/50 hover:bg-slate-700/50"
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="bg-blue-900/20 p-3 rounded-lg border border-blue-500/20">
+                    <p className="text-xs text-slate-300">
+                      Identifies if the company is:
+                    </p>
+                    <ul className="text-xs text-slate-300 mt-1 grid grid-cols-2 gap-1">
+                      <li className="flex items-center"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 mr-1"></span> News organization</li>
+                      <li className="flex items-center"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 mr-1"></span> Media outlet</li>
+                      <li className="flex items-center"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 mr-1"></span> Defense connection</li>
+                      <li className="flex items-center"><span className="h-1.5 w-1.5 rounded-full bg-blue-400 mr-1"></span> Foreign investment</li>
+                    </ul>
                   </div>
                 </form>
               </div>
