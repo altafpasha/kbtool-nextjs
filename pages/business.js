@@ -24,7 +24,7 @@ const validateDate = (dateString) => {
     return false;
   }
 
-  const [month, day, year] = dateString.split('/');
+  const [day, month, year] = dateString.split('/');
 
   const monthNum = parseInt(month, 10);
   const dayNum = parseInt(day, 10);
@@ -52,11 +52,11 @@ const validateDate = (dateString) => {
 
 const formatDate = (inputDate) => {
   if (!inputDate) return '';
-  if (inputDate.includes('/')) return inputDate; // Already in MM/DD/YYYY format
+  if (inputDate.includes('/')) return inputDate; // Already in DD/MM/YYYY format
   
-  // Convert from YYYY-MM-DD to MM/DD/YYYY
+  // Convert from YYYY-MM-DD to DD/MM/YYYY
   const [year, month, day] = inputDate.split('-');
-  return `${month}/${day}/${year}`;
+  return `${day}/${month}/${year}`;
 };
 
 const checkDuplicate = async (regNo, tradeName) => {
@@ -122,11 +122,11 @@ const BusinessPage = () => {
       newValue = parts.join('/');
       
       // Add slashes automatically
-      if (value.length === 2 && !value.includes('/') && parseInt(value) <= 12) {
+      if (value.length === 2 && !value.includes('/') && parseInt(value) <= 31) {
         newValue = value + '/';
       } else if (value.length === 5 && value.split('/').length === 2) {
-        const [month, day] = value.split('/');
-        if (parseInt(day) <= 31) {
+        const [day, month] = value.split('/');
+        if (parseInt(month) <= 12) {
           newValue = value + '/';
         }
       }
@@ -192,7 +192,7 @@ const BusinessPage = () => {
     const isExpiryDateValid = validateDate(ExpiryDate);
 
     if (!isRegDateValid || !isExpiryDateValid) {
-      toast.error('Please enter valid dates in MM/DD/YYYY format');
+      toast.error('Please enter valid dates in DD/MM/YYYY format');
       return;
     }
 
@@ -217,9 +217,9 @@ const BusinessPage = () => {
         toast.success('Text copied to clipboard!');
       }
 
-      // Convert dates from MM/DD/YYYY to YYYY-MM-DD for database
+      // Convert dates from DD/MM/YYYY to YYYY-MM-DD for database
       const convertDateFormat = (dateStr) => {
-        const [month, day, year] = dateStr.split('/');
+        const [day, month, year] = dateStr.split('/');
         return `${year}-${month}-${day}`;
       };
 
@@ -369,23 +369,23 @@ const BusinessPage = () => {
                 onChange={handleInputChange}
               />
               <div>
-                <label htmlFor="RegDate" className="text-purple-300 mb-2 block">Registration Date (MM/DD/YYYY)</label>
+                <label htmlFor="RegDate" className="text-purple-300 mb-2 block">Registration Date (DD/MM/YYYY)</label>
                 <input
                   type="text"
                   id="RegDate"
                   className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
-                  placeholder="MM/DD/YYYY"
+                  placeholder="DD/MM/YYYY"
                   value={formData.RegDate}
                   onChange={handleInputChange}
                 />
               </div>
               <div>
-                <label htmlFor="ExpiryDate" className="text-purple-300 mb-2 block">Expiry Date (MM/DD/YYYY)</label>
+                <label htmlFor="ExpiryDate" className="text-purple-300 mb-2 block">Expiry Date (DD/MM/YYYY)</label>
                 <input
                   type="text"
                   id="ExpiryDate"
                   className="bg-transparent border border-purple-500/30 text-white placeholder-purple-300/50 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition w-full"
-                  placeholder="MM/DD/YYYY"
+                  placeholder="DD/MM/YYYY"
                   value={formData.ExpiryDate}
                   onChange={handleInputChange}
                 />
