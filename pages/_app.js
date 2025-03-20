@@ -24,6 +24,7 @@ function MyApp({ Component, pageProps }) {
         async
         src={`https://www.googletagmanager.com/gtag/js?id=${gtag.GA_TRACKING_ID}`}
       />
+        <script defer src="https://umami-m084wo8o0k0skog4cswwo0co.codesec.me/script.js" data-website-id="e334b626-f7dc-49f2-88f0-954337adfa5b"></script>
       <script
         dangerouslySetInnerHTML={{
           __html: `
