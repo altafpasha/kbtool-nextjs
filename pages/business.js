@@ -2,8 +2,6 @@ import React, { useState } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Footer from '../components/Footer';
-import { supabase } from '../lib/supabaseClient';
-import { queueService } from '../lib/queueService';
 
 const indianStates = [
   "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh",
@@ -50,30 +48,6 @@ const validateDate = (dateString) => {
   return true;
 };
 
-const formatDate = (inputDate) => {
-  if (!inputDate) return '';
-  if (inputDate.includes('/')) return inputDate; // Already in DD/MM/YYYY format
-  
-  // Convert from YYYY-MM-DD to DD/MM/YYYY
-  const [year, month, day] = inputDate.split('-');
-  return `${day}/${month}/${year}`;
-};
-
-const checkDuplicate = async (regNo, tradeName) => {
-  const { data, error } = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('reg_no', regNo)
-    .eq('trade_name', tradeName)
-    .single();
-
-  if (error && error.code !== 'PGRST116') { // PGRST116 means no rows returned
-    throw error;
-  }
-
-  return !!data;
-};
-
 const BusinessPage = () => {
   const [suggestions, setSuggestions] = useState([]);
   const [formData, setFormData] = useState({
@@ -89,7 +63,6 @@ const BusinessPage = () => {
     ExpiryDate: ''
   });
   const [formattedContent, setFormattedContent] = useState('');
-  const [isDataSaved, setIsDataSaved] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleInputChange = (e) => {
@@ -151,7 +124,7 @@ const BusinessPage = () => {
     setSuggestions([]);
   };
 
-  // Generate formatted text based on form data - exactly matching required schema
+  // Generate formatted text based on form data
   const generateFormattedText = () => {
     const {
       tradeName, natureOfBusiness, line1, line2, pinCode, city, state, RegNo, RegDate, ExpiryDate
@@ -167,22 +140,22 @@ const BusinessPage = () => {
     }
 
     const {
-      tradeName, natureOfBusiness, line1, line2, pinCode, city, state, RegNo, RegDate, ExpiryDate
+      tradeName, natureOfBusiness, line1, pinCode, city, state, RegNo, RegDate, ExpiryDate
     } = formData;
 
-    // Validate all required fields from schema
+    // Validate all required fields
     if (!tradeName || !natureOfBusiness || !line1 || !pinCode || !city || !state || !RegNo || !RegDate || !ExpiryDate) {
       toast.error('Please fill in all required fields');
       return;
     }
 
-    // PIN code validation according to schema CHECK constraint
+    // PIN code validation
     if (pinCode.length !== 6) {
       toast.error('PIN code must be exactly 6 digits');
       return;
     }
     
-    // State validation to match schema constraints
+    // State validation
     if (!indianStates.includes(state)) {
       toast.error('Please select a valid Indian state from the suggestions');
       return;
@@ -196,69 +169,18 @@ const BusinessPage = () => {
       return;
     }
 
-    const formattedText = generateFormattedText();
-    // Update the formatted content in the textarea
-    setFormattedContent(formattedText);
-
     try {
       setIsProcessing(true);
-
-      // Check for duplicate before proceeding
-      const isDuplicate = await checkDuplicate(RegNo, tradeName);
       
-      // Copy to clipboard immediately
+      const formattedText = generateFormattedText();
+      setFormattedContent(formattedText);
+      
+      // Copy to clipboard
       await navigator.clipboard.writeText(formattedText);
-      
-      if (isDuplicate) {
-        toast.success('Text copied to clipboard! already ');
-        setIsProcessing(false);
-        return;
-      } else {
-        toast.success('Text copied to clipboard!');
-      }
-
-      // Convert dates from DD/MM/YYYY to YYYY-MM-DD for database
-      const convertDateFormat = (dateStr) => {
-        const [day, month, year] = dateStr.split('/');
-        return `${year}-${month}-${day}`;
-      };
-
-      // Insert data to Supabase according to schema
-      const { error } = await supabase
-        .from('businesses')
-        .insert([
-          {
-            trade_name: tradeName,
-            nature_of_business: natureOfBusiness,
-            line1,
-            line2: line2 || null, // Handle empty line2 as NULL
-            pin_code: pinCode,
-            city,
-            state,
-            reg_no: RegNo,
-            reg_date: convertDateFormat(RegDate),
-            expiry_date: convertDateFormat(ExpiryDate)
-          }
-        ]);
-
-      if (error) {
-        if (error.code === '23505') { // Postgres unique violation code
-          console.log('Duplicate entry detected');
-          toast.info('This record already exists ');
-        } else if (error.code === '23514') { // Check constraint violation
-          console.error('Constraint violation:', error);
-          toast.error('Data validation failed. Please check your inputs.');
-        } else {
-          console.error('Save failed:', error);
-          toast.error(`Failed to save record: ${error.message || 'Database error'}`);
-        }
-      } else {
-        setIsDataSaved(true);
-        toast.success('Copied successfully!');
-      }
+      toast.success('Text copied to clipboard!');
     } catch (error) {
       console.error('Error:', error);
-      toast.error('Failed to process request');
+      toast.error('Failed to copy to clipboard');
     } finally {
       setIsProcessing(false);
     }
@@ -279,7 +201,6 @@ const BusinessPage = () => {
     });
     setSuggestions([]);
     setFormattedContent('');
-    setIsDataSaved(false);
   };
 
   return (
