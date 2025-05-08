@@ -315,7 +315,7 @@ const Layout = ({ children }) => {
               </TabsContent>
             </Tabs>
           </Card>
-           <AdPopup/>      
+                
           {/* Right Column */}
           <div className="lg:col-span-3 space-y-4">
             <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border-white/10 shadow-lg">
