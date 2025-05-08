@@ -1,23 +1,37 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaSearch, FaSave, FaFolder } from 'react-icons/fa';
 
 const SnippyAdBanner = () => {
+  const [isVisible, setIsVisible] = useState(true);
+
+  const handleClose = () => {
+    setIsVisible(false);
+  };
+
+  if (!isVisible) {
+    return null;
+  }
+
   return (
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-white/10 backdrop-blur-lg rounded-2xl border border-white/20 p-8 max-w-xl w-full">
         <div className="flex flex-col space-y-6">
           <div className="flex justify-between items-center mb-2">
             <h2 className="text-2xl font-bold text-white">Snipply - SearchClipper</h2>
-            <button className="text-white/50 hover:text-white">
+            <button 
+              className="text-white/50 hover:text-white transition-colors w-8 h-8 flex items-center justify-center rounded-full hover:bg-white/10"
+              onClick={handleClose}
+              aria-label="Close popup"
+            >
               ✕
             </button>
           </div>
           
           <div className="flex items-center space-x-6">
             <div className="w-24 h-24 rounded-xl overflow-hidden bg-white/20 backdrop-blur-md flex items-center justify-center p-1">
-              <img 
-                src="https://lh3.googleusercontent.com/ersXUm_Eg8abx8FGVhsUTPUFomOEYaE6KBAnc74gkURmEHf--aNkEfJWmjquClLhBBNus0JtvpYHox_MFn_CkJ_RNQ=s60" 
-                alt="Snipply Logo" 
+              <img
+                src="https://lh3.googleusercontent.com/ersXUm_Eg8abx8FGVhsUTPUFomOEYaE6KBAnc74gkURmEHf--aNkEfJWmjquClLhBBNus0JtvpYHox_MFn_CkJ_RNQ=s60"
+                alt="Snipply Logo"
                 className="w-20 h-20 rounded-lg"
               />
             </div>
@@ -59,9 +73,9 @@ const SnippyAdBanner = () => {
           </div>
           
           <div className="mt-2 rounded-lg overflow-hidden shadow-lg shadow-black/20">
-            <img 
-              src="https://lh3.googleusercontent.com/WLH6ROD8Cc39O7d-dL35u5-KENtlYjL6Lxr1FRr0mCKbLDtphGvswU5NpyOCGBkJJi0U5bHiUXnDj-Kkc_mBTNGM2g=s1280-w1280-h800" 
-              alt="Snipply Demo" 
+            <img
+              src="https://lh3.googleusercontent.com/WLH6ROD8Cc39O7d-dL35u5-KENtlYjL6Lxr1FRr0mCKbLDtphGvswU5NpyOCGBkJJi0U5bHiUXnDj-Kkc_mBTNGM2g=s1280-w1280-h800"
+              alt="Snipply Demo"
               className="w-full h-auto object-cover"
             />
           </div>

@@ -11,6 +11,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import AdPopup from "../components/AdPopup"
+import NotificationPopup from './NotificationPopup';
 
 
 
@@ -21,6 +22,9 @@ const Layout = ({ children }) => {
   const [newButtonTitle, setNewButtonTitle] = useState('');
   const [newButtonContent, setNewButtonContent] = useState('');
   const [showCustomForm, setShowCustomForm] = useState(false);
+  const [showAdPopup, setShowAdPopup] = useState(false);
+  const [showNotification, setShowNotification] = useState(false);
+  const [notificationMessage, setNotificationMessage] = useState('');
 
   useEffect(() => {
     const savedButtons = localStorage.getItem('customButtons');
@@ -50,6 +54,21 @@ const Layout = ({ children }) => {
     }
   };
 
+  useEffect(() => {
+    // ... existing useEffect code
+    
+    // Show ad popup on page load/refresh
+    setShowAdPopup(true);    setShowAdPopup(true);
+
+    // Show a notification after a short delay
+    const timer = setTimeout(() => {
+      setNotificationMessage('Welcome to our tool! Hope you find it useful.');
+      setShowNotification(true);
+    }, 3000);
+
+    return () => clearTimeout(timer);
+  }, []);
+  
   const getButtonStyle = (type) => {
     const styles = {
       approved: `
@@ -205,7 +224,7 @@ const Layout = ({ children }) => {
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black relative flex flex-col">
       <div className="flex-grow p-4 space-y-4">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          
+        
           {/* Quick Actions Card */}
           <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border-white/10 shadow-lg">
             <Tabs defaultValue="approved" className="w-full">
@@ -336,8 +355,19 @@ const Layout = ({ children }) => {
           </div>
         </div>
       </div>
-
+      
       <Footer className="mt-auto" />
+
+      {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}      {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
+      
+      {showNotification && (
+        <NotificationPopup 
+          message={notificationMessage} 
+          onClose={() => setShowNotification(false)} 
+        />
+      )}
+
+     
       {children}
     </div>
   );
