@@ -10,6 +10,11 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+
+# Build args for environment variables during build
+ARG ADMIN_PASSWORD
+ENV ADMIN_PASSWORD=${ADMIN_PASSWORD}
+
 RUN npm run build
 RUN npm prune --production
 
@@ -22,6 +27,11 @@ COPY --from=builder /app/.next ./.next
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/maintenance-config.json ./maintenance-config.json
+
+# Runtime environment variables
+ENV NODE_ENV=production
+ENV ADMIN_PASSWORD=${ADMIN_PASSWORD}
 
 EXPOSE 3000
 CMD ["node_modules/.bin/next", "start"]
