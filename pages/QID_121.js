@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useClipboard } from 'use-clipboard-copy';
-import { Copy, RefreshCw, ArrowLeft } from 'lucide-react';
-import Footer from '../components/Footer'; // Adjust the import path as necessary
+import { Copy, RefreshCw, ArrowLeft, MapPin, Home, Building } from 'lucide-react';
+import Footer from '../components/Footer';
 import { useRouter } from 'next/router';
 
 export default function AddressVerificationForm() {
@@ -18,9 +18,7 @@ export default function AddressVerificationForm() {
   const clipboard = useClipboard();
   const router = useRouter();
 
-  const sanitizeInput = (input) => {
-    return input.replace(/[^a-zA-Z0-9\s]/g, '');
-  };
+  const sanitizeInput = (input) => input.replace(/[^a-zA-Z0-9\s]/g, '');
 
   const handleInputChange = (setter) => (e) => {
     setter(sanitizeInput(e.target.value));
@@ -32,7 +30,7 @@ export default function AddressVerificationForm() {
   };
 
   useEffect(() => {
-    setIsPinCodeValid(pinCode.length === 6);
+    setIsPinCodeValid(pinCode.length === 6 || pinCode.length === 0);
   }, [pinCode]);
 
   const formatAddress = () => {
@@ -40,9 +38,9 @@ export default function AddressVerificationForm() {
   };
 
   const handleCopyAndSave = () => {
-    if (!isPinCodeValid) {
+    if (pinCode.length !== 6) {
       setAlertType('error');
-      setAlertMessage('PIN code must be exactly 6 digits long.');
+      setAlertMessage('PIN code must be exactly 6 digits.');
       setShowAlert(true);
       return;
     }
@@ -67,116 +65,127 @@ export default function AddressVerificationForm() {
     setIsPinCodeValid(true);
   };
 
-  const handleBack = () => {
-    router.back();
-  };
+  const InputField = ({ id, label, value, onChange, placeholder, icon: Icon, error }) => (
+    <div className="space-y-1">
+      <label htmlFor={id} className="text-xs text-white/50">{label}</label>
+      <div className="relative">
+        {Icon && <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 z-10" />}
+        <input
+          id={id}
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
+          className={`glass-input w-full ${Icon ? 'has-icon' : ''} ${error ? 'border-red-500/50' : ''}`}
+        />
+      </div>
+      {error && <p className="text-red-400 text-xs">{error}</p>}
+    </div>
+  );
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-900 via-black to-purple-900">
+    <div className="min-h-screen flex flex-col dark-bg">
       <div className="flex-grow flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-black bg-opacity-30 backdrop-filter backdrop-blur-lg rounded-xl shadow-lg border border-purple-500/20">
-          <div className="p-4">
+        <div className="max-w-md w-full glass-card p-6">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-6">
             <button
-              onClick={handleBack}
-              className="text-purple-300 hover:text-purple-100 flex items-center"
+              onClick={() => router.back()}
+              className="glass-btn flex items-center gap-2 text-sm"
             >
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back
+              <ArrowLeft className="w-4 h-4" />
+              Back
+            </button>
+            <div className="flex items-center gap-2">
+              <MapPin className="w-5 h-5 text-white/60" />
+              <h2 className="text-lg font-bold text-white/90">QID_121</h2>
+            </div>
+          </div>
+
+          <p className="text-sm text-white/50 mb-6 text-center">Address Verification Tool</p>
+
+          {/* Form */}
+          <div className="space-y-4">
+            <InputField
+              id="line1"
+              label="Line 1 (House No / Street)"
+              value={line1}
+              onChange={handleInputChange(setLine1)}
+              placeholder="Enter Line 1"
+              icon={Home}
+            />
+            <InputField
+              id="line2"
+              label="Line 2 (Additional Details)"
+              value={line2}
+              onChange={handleInputChange(setLine2)}
+              placeholder="Enter Line 2"
+              icon={Building}
+            />
+            <InputField
+              id="pinCode"
+              label="PIN Code (6 digits)"
+              value={pinCode}
+              onChange={handlePinCodeChange}
+              placeholder="Enter PIN Code"
+              error={pinCode && pinCode.length !== 6 ? 'PIN must be 6 digits' : null}
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <InputField
+                id="city"
+                label="City"
+                value={city}
+                onChange={handleInputChange(setCity)}
+                placeholder="City"
+              />
+              <InputField
+                id="state"
+                label="State"
+                value={state}
+                onChange={handleInputChange(setState)}
+                placeholder="State"
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={handleCopyAndSave}
+              disabled={!line1 || !line2 || pinCode.length !== 6 || !city || !state}
+              className="flex-1 glass-btn glass-btn-success flex items-center justify-center gap-2 disabled:opacity-50"
+            >
+              <Copy className="w-4 h-4" />
+              Copy
+            </button>
+            <button
+              onClick={handleReset}
+              className="glass-btn glass-btn-danger flex items-center gap-2"
+            >
+              <RefreshCw className="w-4 h-4" />
+              Reset
             </button>
           </div>
-          <div className="p-8 pt-0">
-            <h2 className="text-3xl font-bold mb-6 text-purple-300 text-center">Address Verification</h2>
-            
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="line1" className="text-purple-300 block mb-1">Line 1 (House No or Street Address)</label>
-                <input
-                  id="line1"
-                  value={line1}
-                  onChange={handleInputChange(setLine1)}
-                  placeholder="Enter Line 1"
-                  className="w-full bg-purple-900/20 border border-purple-500/50 text-purple-100 placeholder-purple-400/50 rounded-md p-2"
-                />
-              </div>
-              <div>
-                <label htmlFor="line2" className="text-purple-300 block mb-1">Line 2 (Additional Address Details)</label>
-                <input
-                  id="line2"
-                  value={line2}
-                  onChange={handleInputChange(setLine2)}
-                  placeholder="Enter Line 2"
-                  className="w-full bg-purple-900/20 border border-purple-500/50 text-purple-100 placeholder-purple-400/50 rounded-md p-2"
-                />
-              </div>
-              <div>
-                <label htmlFor="pinCode" className="text-purple-300 block mb-1">PIN Code (6 digits)</label>
-                <input
-                  id="pinCode"
-                  value={pinCode}
-                  onChange={handlePinCodeChange}
-                  placeholder="Enter PIN Code"
-                  className={`w-full bg-purple-900/20 border ${isPinCodeValid ? 'border-purple-500/50' : 'border-red-500'} text-purple-100 placeholder-purple-400/50 rounded-md p-2`}
-                />
-                {!isPinCodeValid && <p className="text-red-400 text-sm mt-1">PIN code must be exactly 6 digits.</p>}
-              </div>
-              <div>
-                <label htmlFor="city" className="text-purple-300 block mb-1">City</label>
-                <input
-                  id="city"
-                  value={city}
-                  onChange={handleInputChange(setCity)}
-                  placeholder="Enter City"
-                  className="w-full bg-purple-900/20 border border-purple-500/50 text-purple-100 placeholder-purple-400/50 rounded-md p-2"
-                />
-              </div>
-              <div>
-                <label htmlFor="state" className="text-purple-300 block mb-1">State</label>
-                <input
-                  id="state"
-                  value={state}
-                  onChange={handleInputChange(setState)}
-                  placeholder="Enter State"
-                  className="w-full bg-purple-900/20 border border-purple-500/50 text-purple-100 placeholder-purple-400/50 rounded-md p-2"
-                />
-              </div>
-            </div>
 
-            <div className="mt-8 space-x-4 flex justify-center">
-              <button
-                onClick={handleCopyAndSave}
-                disabled={!line1 || !line2 || !isPinCodeValid || !city || !state}
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Copy className="mr-2 h-4 w-4" /> Copy
-              </button>
-              <button
-                onClick={handleReset}
-                className="border border-purple-500 text-purple-300 hover:bg-purple-900/30 px-4 py-2 rounded-md flex items-center"
-              >
-                <RefreshCw className="mr-2 h-4 w-4" /> Reset
-              </button>
-            </div>
-
-            {showAlert && (
-              <div className={`mt-6 p-4 rounded-lg ${
-                alertType === 'success' ? 'bg-green-900/30 border-green-500/50' : 
-                alertType === 'error' ? 'bg-red-900/30 border-red-500/50' :
-                'bg-blue-900/30 border-blue-500/50'
+          {/* Alert */}
+          {showAlert && (
+            <div className={`mt-4 p-3 rounded-lg text-sm ${alertType === 'success' ? 'bg-green-500/10 border border-green-500/20 text-green-400' :
+              alertType === 'error' ? 'bg-red-500/10 border border-red-500/20 text-red-400' :
+                'bg-blue-500/10 border border-blue-500/20 text-blue-400'
               }`}>
-                <span className="text-purple-200 font-semibold">{alertType === 'success' ? 'Success' : alertType === 'error' ? 'Error' : 'Info'}</span>
-                <p className="text-purple-300 mt-1">{alertMessage}</p>
-              </div>
-            )}
+              {alertMessage}
+            </div>
+          )}
 
-            {copiedOutput && (
-              <div className="mt-6 p-4 bg-purple-900/20 rounded-lg border border-purple-500/50">
-                <h3 className="text-lg font-semibold text-purple-300 mb-2">Copied Output:</h3>
-                <p className="text-purple-100 break-words">{copiedOutput}</p>
-              </div>
-            )}
-          </div>
+          {/* Output */}
+          {copiedOutput && (
+            <div className="mt-4 p-3 rounded-lg bg-white/5 border border-white/10">
+              <p className="text-xs text-white/50 mb-1">Copied Output:</p>
+              <p className="text-sm text-white/80 break-words">{copiedOutput}</p>
+            </div>
+          )}
         </div>
       </div>
-      
+
       <Footer />
     </div>
   );

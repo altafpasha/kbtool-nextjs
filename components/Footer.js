@@ -1,137 +1,95 @@
 import React from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
-import { 
-  Home, 
-  Github, 
-  Linkedin, 
-  Twitter, 
-  Instagram, 
-  Wrench,
-  Chrome
-} from 'lucide-react';
+import { Home, Github, Linkedin, Instagram, Wrench, Calculator } from 'lucide-react';
+
+// X (Twitter) Icon Component
+const XIcon = ({ className }) => (
+  <svg className={className} viewBox="0 0 24 24" fill="currentColor">
+    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+  </svg>
+);
 
 const Footer = () => {
   const router = useRouter();
   const isActivePage = (path) => router.pathname === path;
 
   const NavLink = ({ href, children, isExternal }) => {
-    const baseClasses = "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-300 hover:bg-white/10 text-white";
-    
+    const baseClasses = "flex items-center gap-2 px-3 py-2 rounded-lg transition-all duration-200 text-white/70 hover:text-white hover:bg-white/5";
+
     if (isExternal) {
       return (
-        <a 
-          href={href}
-          target="_blank"
-          rel="noopener noreferrer"
-          className={baseClasses}
-        >
+        <a href={href} target="_blank" rel="noopener noreferrer" className={baseClasses}>
           {children}
         </a>
       );
     }
-    
+
     return (
       <Link href={href} passHref>
-        <span className={`${baseClasses} ${
-          isActivePage(href) ? 'bg-white/20' : ''
-        }`}>
+        <span className={`${baseClasses} ${isActivePage(href) ? 'bg-white/10 text-white' : ''}`}>
           {children}
         </span>
       </Link>
     );
   };
 
-  const SocialIcon = ({ href, icon: Icon }) => (
+  const SocialIcon = ({ href, icon: Icon, isCustom }) => (
     <a
       href={href}
       target="_blank"
       rel="noopener noreferrer"
-      className="p-2 rounded-full hover:bg-white/10 transition-all duration-300"
+      className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200"
     >
-      <Icon className="w-5 h-5 text-white" />
+      {isCustom ? <Icon className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
     </a>
   );
 
   return (
-    <footer className="relative backdrop-blur-md bg-purple-900/30 border-t border-purple-400/20">
-      <div className="absolute inset-0 bg-gradient-to-b from-purple-600/5 to-pink-500/5" />
-      
-      <div className="relative container mx-auto px-4 py-6">
-        <div className="flex flex-col gap-8 md:gap-6 lg:flex-row lg:items-center lg:justify-between">
-          {/* Logo */}
-          <div className="flex items-center">
-            <Image
-              src="/logo/appship-full.png"
-              alt="Appship Logo"
-              width={150}
-              height={40}
-              className="object-contain"
-            />
+    <footer className="relative glass-card border-0 border-t border-white/5 rounded-none">
+      <div className="container mx-auto px-4 py-4">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          {/* Left - Brand */}
+          <div className="flex items-center gap-3">
+            <span className="text-lg font-bold text-white/90">KBTool</span>
+            <span className="text-xs text-white/40">by Altaf</span>
           </div>
 
-          {/* Navigation Links */}
-          <div className="flex flex-wrap gap-3 justify-center lg:justify-start">
+          {/* Center - Navigation */}
+          <div className="flex flex-wrap gap-1 justify-center">
             <NavLink href="/">
-              <Home className="w-5 h-5" />
-              <span>Home</span>
+              <Home className="w-4 h-4" />
+              <span className="text-sm">Home</span>
+            </NavLink>
+            <NavLink href="/tools">
+              <Calculator className="w-4 h-4" />
+              <span className="text-sm">Tools</span>
             </NavLink>
             <NavLink href="/business">
-              <Wrench className="w-5 h-5" />
-              <span>Business-Tool</span>
+              <Wrench className="w-4 h-4" />
+              <span className="text-sm">Business</span>
             </NavLink>
             <NavLink href="/QID_121">
-              <span>QID_121</span>
+              <span className="text-sm">QID_121</span>
             </NavLink>
           </div>
 
-          {/* Chrome Extension Button */}
-          <a
-            href="https://chromewebstore.google.com/search/codesec"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center justify-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500/50 to-pink-500/50 rounded-lg hover:from-purple-500/70 hover:to-pink-500/70 transition-all duration-300 backdrop-blur-sm"
-          >
-            <Chrome className="w-5 h-5" />
-            <span>Get Chrome Extension</span>
-          </a>
-
-          {/* Company Info */}
-          <div className="text-center lg:text-right">
-            <p className="text-sm text-white">
+          {/* Right - Social + Copyright */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1">
+              <SocialIcon href="https://github.com/altafpasha" icon={Github} />
               <a
-                href="https://appship.me"
+                href="https://x.com/altafpasha_h"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-purple-200 transition-colors"
+                className="p-2 rounded-lg text-white/50 hover:text-white hover:bg-white/5 transition-all duration-200"
               >
-                Appship
-              </a>{' '}
-              &copy; {new Date().getFullYear()} - Powered by{' '}
-              <a
-                href="https://codesec.me"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="hover:text-purple-300 transition-colors"
-              >
-                CodeSec
+                <XIcon className="w-4 h-4" />
               </a>
-            </p>
-            <p className="text-sm mt-1 text-white">
-              Developed by{' '}
-              <span className="font-semibold text-purple-700">
-                Altaf
-              </span>
-            </p>
-          </div>
-
-          {/* Social Links */}
-          <div className="flex items-center justify-center gap-2">
-            <SocialIcon href="https://github.com/imaltaf" icon={Github} />
-            <SocialIcon href="https://www.linkedin.com/in/altaf-pasha/" icon={Linkedin} />
-            <SocialIcon href="https://www.instagram.com/altaf_90s?igsh=a3phcXAwaHNlbWFj" icon={Instagram} />
-            <SocialIcon href="https://x.com/Dark_Mechanic" icon={Twitter} />
+              <SocialIcon href="https://instagram.com/altafpasha_h" icon={Instagram} />
+              <SocialIcon href="https://www.linkedin.com/in/altaf-pasha/" icon={Linkedin} />
+            </div>
+            <span className="text-xs text-white/30">©{new Date().getFullYear()}</span>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, X, MessageSquare } from "lucide-react";
 import Transaction from './Transaction';
 import AutoSalaryCalculator from './AutoSalaryCalculator';
 import CompanySearch from './CompanySearch';
@@ -56,9 +56,9 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     // ... existing useEffect code
-    
+
     // Show ad popup on page load/refresh
-    setShowAdPopup(true);    setShowAdPopup(true);
+    setShowAdPopup(true); setShowAdPopup(true);
 
     // Show a notification after a short delay
     const timer = setTimeout(() => {
@@ -68,7 +68,7 @@ const Layout = ({ children }) => {
 
     return () => clearTimeout(timer);
   }, []);
-  
+
   const getButtonStyle = (type) => {
     const styles = {
       approved: `
@@ -104,10 +104,10 @@ const Layout = ({ children }) => {
       variant="secondary"
       onClick={() => handleCopyText(text)}
       className={`
-        w-full h-12 relative overflow-hidden
-        transition-all duration-300 font-medium
+        w-full h-auto min-h-[48px] py-3 px-4 relative overflow-hidden
+        transition-all duration-300 font-medium rounded-xl
         ${getButtonStyle(type)}
-        ${copiedButton === text ? 'bg-gray-500/30 border-gray-500/50 text-purple-100' : ''}
+        ${copiedButton === text ? 'bg-white/20 border-white/30 text-white scale-95' : ''}
       `}
     >
       {copiedButton === text ? (
@@ -116,15 +116,15 @@ const Layout = ({ children }) => {
           <span>Copied!</span>
         </div>
       ) : (
-        <span className="font-medium">{label || text}</span>
+        <span className="font-medium text-sm">{label || text}</span>
       )}
     </Button>
   );
 
   const ButtonGroup = ({ title, buttons, type }) => (
     <div className="space-y-3">
-      <h3 className="font-bold text-white/90 text-sm pl-1">{title}</h3>
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+      <h3 className="font-semibold text-white/80 text-xs uppercase tracking-wider pl-1">{title}</h3>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {buttons.map((button, index) => (
           <CopyButton key={index} text={button.text} label={button.label} type={type} />
         ))}
@@ -221,30 +221,34 @@ const Layout = ({ children }) => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black relative flex flex-col">
-      <div className="flex-grow p-4 space-y-4">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-        
+    <div className="h-screen dark-bg flex flex-col overflow-hidden">
+      <div className="flex-1 p-3 md:p-4 overflow-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+
           {/* Quick Actions Card */}
-          <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border-white/10 shadow-lg">
+          <Card className="p-5 glass-card border-0">
+            <h3 className="text-xs uppercase tracking-widest text-white/40 mb-4 font-semibold">Common Comments</h3>
             <Tabs defaultValue="approved" className="w-full">
-              <TabsList className="w-full mb-6 bg-white/5 backdrop-blur-lg border border-white/10 rounded-lg p-1">
-                <TabsTrigger 
-                  value="approved" 
-                  className="flex-1 data-[state=active]:bg-green-500/20 data-[state=active]:text-green-100 text-white/70"
+              <TabsList className="w-full mb-5 bg-black/40 rounded-full p-1 flex">
+                <TabsTrigger
+                  value="approved"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-full py-2.5 px-3 text-xs font-medium transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-emerald-500 data-[state=active]:to-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md text-white/50 hover:text-white/70"
                 >
+                  <Check className="w-3.5 h-3.5" />
                   Approved
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="reject" 
-                  className="flex-1 data-[state=active]:bg-red-500/20 data-[state=active]:text-red-100 text-white/70"
+                <TabsTrigger
+                  value="reject"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-full py-2.5 px-3 text-xs font-medium transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-red-500 data-[state=active]:to-red-600 data-[state=active]:text-white data-[state=active]:shadow-md text-white/50 hover:text-white/70"
                 >
+                  <X className="w-3.5 h-3.5" />
                   Reject
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="comments" 
-                  className="flex-1 data-[state=active]:bg-blue-500/20 data-[state=active]:text-blue-100 text-white/70"
+                <TabsTrigger
+                  value="comments"
+                  className="flex-1 flex items-center justify-center gap-1.5 rounded-full py-2.5 px-3 text-xs font-medium transition-all duration-200 data-[state=active]:bg-gradient-to-r data-[state=active]:from-blue-500 data-[state=active]:to-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md text-white/50 hover:text-white/70"
                 >
+                  <MessageSquare className="w-3.5 h-3.5" />
                   Comments
                 </TabsTrigger>
               </TabsList>
@@ -271,7 +275,7 @@ const Layout = ({ children }) => {
                     <h3 className="font-bold text-white/90 text-sm pl-1">Custom Buttons</h3>
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                       {customButtons.map((button, index) => (
-                        <CopyButton 
+                        <CopyButton
                           key={index}
                           text={button.content}
                           label={button.title}
@@ -334,40 +338,39 @@ const Layout = ({ children }) => {
               </TabsContent>
             </Tabs>
           </Card>
-                
+
           {/* Right Column */}
           <div className="lg:col-span-3 space-y-4">
-            <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border-white/10 shadow-lg">
+            <Card className="p-5 glass-card border-0">
               <Transaction />
             </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border-white/10 shadow-lg">
+              <Card className="p-5 glass-card border-0">
                 <AutoSalaryCalculator />
               </Card>
-              <Card className="p-6 bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-xl border-white/10 shadow-lg">
+              <Card className="p-5 glass-card border-0">
                 <CompanySearch />
-                
               </Card>
             </div>
 
-            
+
           </div>
         </div>
       </div>
-      
-      <Footer className="mt-auto" />
 
-      {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}      {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
-      
+      <Footer />
+
+      {showAdPopup && <AdPopup onClose={() => setShowAdPopup(false)} />}
+
       {showNotification && (
-        <NotificationPopup 
-          message={notificationMessage} 
-          onClose={() => setShowNotification(false)} 
+        <NotificationPopup
+          message={notificationMessage}
+          onClose={() => setShowNotification(false)}
         />
       )}
 
-     
+
       {children}
     </div>
   );

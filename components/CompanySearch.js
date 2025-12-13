@@ -1,235 +1,136 @@
-import { useState, useEffect } from 'react';
-import ZaubaButton from './ZaubaButton';
-import ResetButton from './ResetButton';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { ScrollArea } from "@/components/ui/scroll-area";
-import CompanySearchGlass from './CompanySearchGlass';
+import { useState } from 'react';
+import { Search, Globe, Building2, FileText, ExternalLink, Sparkles, Link2, Newspaper, ArrowRight, RotateCcw, AlertTriangle, ExternalLinkIcon } from 'lucide-react';
 
 const CompanySearch = () => {
+  const [mode, setMode] = useState('basic');
+
+  // Basic Search States
   const [companyName, setCompanyName] = useState('');
   const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [searchHistory, setSearchHistory] = useState([]);
-  const [showPopupWarning, setShowPopupWarning] = useState(false);
-  const [showSuccess, setShowSuccess] = useState(false);
-  const [showAllHistory, setShowAllHistory] = useState(false);
-  const [showRecentSearches, setShowRecentSearches] = useState(true);
 
-  // Load search history and show popup warning on component mount
-  useEffect(() => {
-    const savedHistory = localStorage.getItem('searchHistory');
-    if (savedHistory) {
-      setSearchHistory(JSON.parse(savedHistory));
-    }
-    // Show popup warning immediately
-    setShowPopupWarning(true);
-  }, []);
+  // AI Search States
+  const [aiCompanyName, setAiCompanyName] = useState('');
+  const [companyOne, setCompanyOne] = useState('');
+  const [companyTwo, setCompanyTwo] = useState('');
+  const [newsCompany, setNewsCompany] = useState('');
+  const [aiTab, setAiTab] = useState('search');
 
-  const getUrlMap = (sanitizedName) => ({
-    zauba: `https://www.google.com/search?q=zauba+${sanitizedName}`,
-    companyCheck: `https://www.google.com/search?q=thecompanycheck.com+${sanitizedName}`,
-    tofler: `https://www.google.com/search?q=tofler.in+${sanitizedName}`,
-    site: `https://www.google.com/search?q=site:+${sanitizedName}`,
-    falconebiz: `https://www.google.com/search?q=falconebiz.com+${sanitizedName}`
-  });
+  const searchSources = [
+    { key: 'zauba', label: 'Zauba', icon: Building2, query: 'site:zaubacorp.com' },
+    { key: 'companyCheck', label: 'CompanyCheck', icon: FileText, query: 'site:thecompanycheck.com' },
+    { key: 'tofler', label: 'Tofler', icon: Globe, query: 'site:tofler.in' },
+    { key: 'falconebiz', label: 'FalconeBiz', icon: ExternalLink, query: 'site:falconebiz.com' }
+  ];
 
-  const validateInput = (input) => {
-    if (!input.trim()) return 'Please enter a company name';
-    if (input.length < 2) return 'Company name must be at least 2 characters long';
-    if (input.length > 100) return 'Company name is too long';
-    return '';
-  };
-
-  const sanitizeInput = (input) => input.replace(/[^a-zA-Z0-9\s]/g, '').trim();
-
-  const openMultipleUrls = async (urls) => {
-    try {
-      // Open URLs sequentially with a longer delay
-      for (const url of urls) {
-        await new Promise((resolve) => {
-          const link = document.createElement('a');
-          link.href = url;
-          link.target = '_blank';
-          link.rel = 'noopener noreferrer';
-          document.body.appendChild(link);
-          
-          setTimeout(() => {
-            try {
-              link.click();
-              document.body.removeChild(link);
-              resolve(true);
-            } catch (err) {
-              console.error(`Error opening URL ${url}:`, err);
-              resolve(false);
-            }
-          }, 300); // Increased delay to 300ms
-        });
-      }
-      return true;
-    } catch (error) {
-      console.error('Error in openMultipleUrls:', error);
-      return false;
-    }
-  };
-
-  const openUrlWithFallback = (url) => {
-    const link = document.createElement('a');
-    link.href = url;
-    link.target = '_blank';
-    link.rel = 'noopener noreferrer';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    return true;
-  };
-
-  const updateSearchHistory = (sanitizedName) => {
-    const newHistory = [
-      { 
-        name: sanitizedName, 
-        timestamp: new Date().toISOString() 
-      }, 
-      ...searchHistory.filter(item => item.name !== sanitizedName).slice(0, 9)
-    ];
-    setSearchHistory(newHistory);
-    localStorage.setItem('searchHistory', JSON.stringify(newHistory));
-  };
-
-  const handleSearch = async (query, searchTerm = companyName) => {
-    const validationError = validateInput(searchTerm);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-
-    setIsLoading(true);
+  const openSearch = async (source) => {
+    if (!companyName.trim()) { setError('Enter company name first'); return; }
     setError('');
-    setShowPopupWarning(false);
-    setShowSuccess(false);
 
-    try {
-      const sanitizedName = sanitizeInput(searchTerm);
-      const urlMap = getUrlMap(sanitizedName);
-
-      if (query === 'all') {
-        const urls = Object.values(urlMap);
-        const success = await openMultipleUrls(urls);
-        
-        if (success) {
-          setShowSuccess(true);
-          setTimeout(() => setShowSuccess(false), 3000);
-        } else {
-          setShowPopupWarning(true);
-        }
-      } else {
-        openUrlWithFallback(urlMap[query]);
+    if (source === 'all') {
+      for (const s of searchSources) {
+        window.open(`https://www.google.com/search?q=${encodeURIComponent(`${s.query} ${companyName}`)}`, '_blank');
+        await new Promise(r => setTimeout(r, 300));
       }
-
-      updateSearchHistory(sanitizedName);
-    } catch {
-      setError('An error occurred while performing the search');
-    } finally {
-      setIsLoading(false);
+    } else {
+      const s = searchSources.find(x => x.key === source);
+      window.open(`https://www.google.com/search?q=${encodeURIComponent(`${s.query} ${companyName}`)}`, '_blank');
     }
   };
 
-  const handleHistoryItemClick = (historyItem, searchType) => {
-    setCompanyName(historyItem.name);
-    if (searchType) {
-      handleSearch(searchType, historyItem.name);
-    }
+  const handleReset = (type) => {
+    if (type === 'basic') { setCompanyName(''); setError(''); }
+    else if (type === 'search') setAiCompanyName('');
+    else if (type === 'compare') { setCompanyOne(''); setCompanyTwo(''); }
+    else if (type === 'news') setNewsCompany('');
   };
 
-  const handleReset = () => {
-    setCompanyName('');
-    setError('');
-    setIsLoading(false);
-    setShowPopupWarning(false);
-    setShowSuccess(false);
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') handleSearch('all');
-  };
-
-  useEffect(() => {
-    if (showPopupWarning) {
-      const timer = setTimeout(() => setShowPopupWarning(false), 5000);
-      return () => clearTimeout(timer);
-    }
-  }, [showPopupWarning]);
-
-  // Get the display history based on showAllHistory state
-  const displayHistory = showAllHistory ? searchHistory : searchHistory.slice(0, 4);
+  // AI Handlers
+  const handleAiSearch = (e) => { e.preventDefault(); if (aiCompanyName.trim()) window.open(`https://search.brave.com/search?q=${encodeURIComponent(aiCompanyName)}&source=llmSuggest&summary=1`, '_blank'); };
+  const handleCompareSearch = (e) => { e.preventDefault(); if (companyOne.trim() && companyTwo.trim()) window.open(`https://search.brave.com/search?q=${encodeURIComponent(`${companyOne} ${companyTwo} is this both company are same organization`)}&source=llmSuggest&summary=1`, '_blank'); };
+  const handleNewsSearch = (e) => { e.preventDefault(); if (newsCompany.trim()) window.open(`https://search.brave.com/search?q=${encodeURIComponent(`${newsCompany} is this company a news media or news company`)}&source=llmSuggest&summary=1`, '_blank'); };
 
   return (
-    <Card className="bg-black/50 border-white/10">
-      <CardHeader>
-        <CardTitle className="text-gray-300">Company Search Engine</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {showPopupWarning && (
-          <Alert className="bg-yellow-500/10 text-yellow-200 border-yellow-500/50">
-            <AlertDescription>
-              &quot;Open All Tabs Fixed&quot; - Please allow popup windows for this site to use the multi-search feature.
-            </AlertDescription>
-          </Alert>
-        )}
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-white/90">Company Search</h3>
+        <div className="flex p-1 rounded-lg bg-white/5">
+          <button onClick={() => setMode('basic')} className={`px-3 py-1.5 rounded-md text-xs flex items-center gap-1.5 ${mode === 'basic' ? 'bg-white/10 text-white' : 'text-white/50'}`}>
+            <Search className="w-3 h-3" />Basic
+          </button>
+          <button onClick={() => setMode('ai')} className={`px-3 py-1.5 rounded-md text-xs flex items-center gap-1.5 ${mode === 'ai' ? 'bg-white/10 text-white' : 'text-white/50'}`}>
+            <Sparkles className="w-3 h-3" />AI
+          </button>
+        </div>
+      </div>
 
-        {showSuccess && (
-          <Alert className="bg-green-500/10 text-green-200 border-green-500/50">
-            <AlertDescription>
-              Successfully opened all search tabs!
-            </AlertDescription>
-          </Alert>
-        )}
+      {/* Basic Search */}
+      {mode === 'basic' && (
+        <div className="space-y-3">
+          {/* Input */}
+          <div className="relative">
+            <input type="text" className="glass-input w-full pr-10" placeholder="Enter company name..." value={companyName}
+              onChange={(e) => setCompanyName(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && openSearch('zauba')} />
+            {companyName && <button className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 hover:text-white" onClick={() => handleReset('basic')}>×</button>}
+          </div>
 
-        <div className="relative">
-          <input
-            type="text"
-            className="p-2 w-full rounded bg-transparent text-white border border-white/20"
-            placeholder="Enter Company Name"
-            value={companyName}
-            onChange={(e) => setCompanyName(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={isLoading}
-          />
-          {companyName && (
-            <button 
-              className="absolute right-2 top-2 text-gray-400 hover:text-white" 
-              onClick={handleReset}
-            >
-              ×
-            </button>
+          {error && <p className="text-red-400 text-xs">{error}</p>}
+
+          {/* Open All */}
+          <button onClick={() => openSearch('all')} className="w-full glass-btn glass-btn-success text-xs flex items-center justify-center gap-2">
+            <ExternalLinkIcon className="w-3 h-3" />Open All Tabs
+          </button>
+
+          {/* Source Buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            {searchSources.map(({ key, label, icon: Icon }) => (
+              <button key={key} onClick={() => openSearch(key)} className="glass-btn text-xs flex items-center justify-center gap-2">
+                <Icon className="w-3 h-3 opacity-60" />{label}
+              </button>
+            ))}
+          </div>
+
+          {/* Reset */}
+          <button onClick={() => handleReset('basic')} className="w-full glass-btn glass-btn-danger text-xs flex items-center justify-center gap-2">
+            <RotateCcw className="w-3 h-3" />Reset
+          </button>
+        </div>
+      )}
+
+      {/* AI Search */}
+      {mode === 'ai' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 p-2 rounded bg-red-500/10 border border-red-500/20">
+            <AlertTriangle className="w-3 h-3 text-red-400" /><p className="text-xs text-white/50">AI results may not be accurate</p>
+          </div>
+          <div className="flex gap-1 p-1 rounded-lg bg-white/5">
+            {[{ id: 'search', label: 'Search', icon: Sparkles }, { id: 'compare', label: 'Compare', icon: Link2 }, { id: 'news', label: 'Media', icon: Newspaper }].map(({ id, label, icon: Icon }) => (
+              <button key={id} onClick={() => setAiTab(id)} className={`flex-1 py-1.5 rounded-md text-xs flex items-center justify-center gap-1 ${aiTab === id ? 'bg-white/10 text-white' : 'text-white/50'}`}>
+                <Icon className="w-3 h-3" />{label}
+              </button>
+            ))}
+          </div>
+          {aiTab === 'search' && (
+            <form onSubmit={handleAiSearch} className="space-y-2">
+              <input type="text" placeholder="Company name..." value={aiCompanyName} onChange={(e) => setAiCompanyName(e.target.value)} className="glass-input w-full" />
+              <div className="flex gap-2"><button type="submit" className="flex-1 glass-btn glass-btn-info text-xs">Search AI</button><button type="button" onClick={() => handleReset('search')} className="glass-btn"><RotateCcw className="w-3 h-3" /></button></div>
+            </form>
+          )}
+          {aiTab === 'compare' && (
+            <form onSubmit={handleCompareSearch} className="space-y-2">
+              <div className="flex gap-2 items-center"><input type="text" placeholder="Company 1" value={companyOne} onChange={(e) => setCompanyOne(e.target.value)} className="glass-input flex-1" /><ArrowRight className="w-4 h-4 text-white/30" /><input type="text" placeholder="Company 2" value={companyTwo} onChange={(e) => setCompanyTwo(e.target.value)} className="glass-input flex-1" /></div>
+              <div className="flex gap-2"><button type="submit" className="flex-1 glass-btn glass-btn-info text-xs">Compare</button><button type="button" onClick={() => handleReset('compare')} className="glass-btn"><RotateCcw className="w-3 h-3" /></button></div>
+            </form>
+          )}
+          {aiTab === 'news' && (
+            <form onSubmit={handleNewsSearch} className="space-y-2">
+              <input type="text" placeholder="Company name..." value={newsCompany} onChange={(e) => setNewsCompany(e.target.value)} className="glass-input w-full" />
+              <div className="flex gap-2"><button type="submit" className="flex-1 glass-btn glass-btn-info text-xs">Check Media</button><button type="button" onClick={() => handleReset('news')} className="glass-btn"><RotateCcw className="w-3 h-3" /></button></div>
+            </form>
           )}
         </div>
-
-        {error && <p className="text-red-500 text-sm">{error}</p>}
-
-        <div className="flex flex-wrap gap-2">
-          <ResetButton onClick={handleReset} disabled={isLoading}>Reset</ResetButton>
-          <ZaubaButton 
-            onClick={() => handleSearch('all')} 
-            disabled={isLoading}
-          >
-            {isLoading ? 'Opening...' : 'Open All Tabs'}
-          </ZaubaButton>
-          {Object.keys(getUrlMap('')).map(key => (
-            <ZaubaButton 
-              key={key} 
-              onClick={() => handleSearch(key)} 
-              disabled={isLoading}
-              data-search={key}
-            >
-              {key}
-            </ZaubaButton>
-          ))}
-        </div>
-        <CompanySearchGlass />
-        
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 

@@ -43,7 +43,14 @@ const CombinedCalculator = () => {
 
   // Salary Calculator Functions
   const calculateAverage = (input) => {
-    const salaries = input.split(/[,\s]+/).map(parseFloat).filter(value => !isNaN(value));
+    // Split by comma or whitespace, parse as float, then truncate decimal part
+    const salaries = input.split(/[,\s]+/)
+      .map(val => {
+        // Truncate decimal part - if 1777.88, only take 1777
+        const num = parseFloat(val);
+        return isNaN(num) ? NaN : Math.floor(num);
+      })
+      .filter(value => !isNaN(value));
     if (salaries.length === 0) {
       setAverageResult('Please enter valid salaries.');
       setTotalSalary(0);
@@ -58,14 +65,16 @@ const CombinedCalculator = () => {
   };
 
   const handleSalaryChange = (e) => {
-    const newValue = e.target.value.replace(/[^0-9,\s]/g, '');
+    // Allow digits, commas, spaces, and dots (for decimal numbers)
+    const newValue = e.target.value.replace(/[^0-9,.\s]/g, '');
     setSalariesInput(newValue);
     calculateAverage(newValue);
   };
 
   const handleSalaryPaste = (e) => {
     e.preventDefault();
-    const pastedData = e.clipboardData.getData('text').replace(/[^0-9,\s]/g, '');
+    // Allow digits, commas, spaces, and dots (for decimal numbers)
+    const pastedData = e.clipboardData.getData('text').replace(/[^0-9,.\s]/g, '');
     const newValue = salariesInput + pastedData;
     setSalariesInput(newValue);
     calculateAverage(newValue);
@@ -80,7 +89,7 @@ const CombinedCalculator = () => {
     const newText = e.target.value;
     const cleaned = cleanText(newText);
     setInput(cleaned);
-    
+
     if (autoCopy && cleaned) {
       navigator.clipboard.writeText(cleaned).then(() => {
         showCopyNotification();
@@ -94,7 +103,7 @@ const CombinedCalculator = () => {
     navigator.clipboard.readText().then(pastedText => {
       const cleaned = cleanText(pastedText);
       setInput(cleaned);
-      
+
       if (autoCopy && cleaned) {
         navigator.clipboard.writeText(cleaned).then(() => {
           showCopyNotification();
@@ -123,28 +132,28 @@ const CombinedCalculator = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-8 space-y-8">
+    <div className="space-y-6">
       {/* Salary Calculator Section */}
-      <div className="backdrop-blur-lg bg-slate-800/30 border border-slate-700/50 rounded-2xl shadow-2xl p-8 relative ">
-        <h2 className="text-2xl font-bold mb-6 text-white">Salary Calculator</h2>
-        <div className="space-y-4">
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-white/90">Salary Calculator</h2>
+        <div className="space-y-3">
           <input
             type="text"
             value={salariesInput}
             onChange={handleSalaryChange}
             onPaste={handleSalaryPaste}
-            className="w-full bg-slate-700/30 border-slate-600/50  p-4 border border-white/30 rounded-xl text-white  focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            className="w-full glass-input"
             placeholder="Enter salaries (numbers only)"
           />
-          <div className="text-purple-500">{autoCopied}</div>
-          <div className="text-lg font-bold text-white">{averageResult}</div>
-          <div className="text-sm text-gray-200">
+          <div className="text-green-400 text-sm">{autoCopied}</div>
+          <div className="text-base font-semibold text-white">{averageResult}</div>
+          <div className="text-sm text-white/60">
             Total Salary: {totalSalary.toFixed(0)}
             <br />
             Number of Salaries: {salaryCount}
           </div>
           {averageResult && (
-            <div className="text-xs text-gray-300">
+            <div className="text-xs text-white/40">
               Auto-reset in 5 seconds...
             </div>
           )}
@@ -152,50 +161,39 @@ const CombinedCalculator = () => {
       </div>
 
       {/* Special Character Remover Section */}
-      <div className="backdrop-blur-lg bg-slate-800/30 border border-slate-700/50 rounded-2xl shadow-2xl p-8 relative ">
-        <div className="absolute -top-3 -right-3 z-20">
-          <span className="bg-gradient-to-r from-green-400 to-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-            New
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold text-white/90">Special Character Remover</h2>
+
+        <div
+          className="flex items-center gap-2 cursor-pointer"
+          onClick={toggleAutoCopy}
+        >
+          <div className="relative inline-flex h-5 w-10 items-center rounded-full transition-colors duration-300 bg-white/10">
+            <div className={`absolute h-4 w-4 transform rounded-full bg-white transition-transform duration-300 ${autoCopy ? 'translate-x-[22px]' : 'translate-x-0.5'
+              }`} />
+          </div>
+          <span className="text-sm text-white/70">
+            {autoCopy ? 'Auto-copy ON' : 'Auto-copy OFF'}
           </span>
         </div>
 
-        <h2 className="text-2xl font-bold mb-6 text-white">Special Character Remover</h2>
-        
-        <div className="flex items-center justify-between mb-4">
-          <div 
-            className="flex items-center gap-2 cursor-pointer"
-            onClick={toggleAutoCopy}
-          >
-            <div className="relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300  bg-slate-700/30 hover:bg-white/40">
-              <div className={`absolute h-5 w-5 transform rounded-full bg-white transition-transform duration-300 ${
-                autoCopy ? 'translate-x-[22px]' : 'translate-x-0.5'
-              }`} />
-            </div>
-            <span className="text-sm font-medium  text-white select-none">
-              {autoCopy ? 'Auto-copy ON' : 'Auto-copy OFF'}
-            </span>
-          </div>
-        </div>
-
-        <div className="space-y-4">
+        <div className="space-y-3">
           <textarea
             ref={inputRef}
             value={input}
             onChange={handleInputChange}
             onPaste={handleCharacterPaste}
-            className="w-full p-4  bg-slate-700/30 border-slate-600/50  border border-white/30 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-            rows={4}
+            className="w-full glass-input min-h-[100px] resize-none"
+            rows={3}
             placeholder="Type or paste text here..."
           />
 
           {!autoCopy && (
             <button
               onClick={copyToClipboard}
-              className="w-full bg-white/20 text-white py-3 px-4 rounded-xl hover:bg-white/30 transition-colors border border-white/30 backdrop-blur-sm group relative"
+              className="w-full glass-btn"
             >
-              <span className="inline-block transition-transform duration-200 group-hover:scale-105">
-                {showCopied ? 'Copied!' : 'Copy Clean Text'}
-              </span>
+              {showCopied ? 'Copied!' : 'Copy Clean Text'}
             </button>
           )}
         </div>

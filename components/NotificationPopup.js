@@ -38,7 +38,7 @@ const NotificationPopup = ({ onClose }) => {
         </div>
         <div className="mt-4 flex justify-center">
           <a
-            href="https://github.com/imaltaf"
+            href="https://github.com/altafpasha"
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center text-sm text-yellow-400 hover:underline"
@@ -55,7 +55,7 @@ const NotificationPopup = ({ onClose }) => {
                 clipRule="evenodd"
               />
             </svg>
-            GitHub: @imaltaf
+            GitHub: @altafpasha
           </a>
         </div>
       </div>
