@@ -2,6 +2,7 @@ import React from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { Home, Github, Linkedin, Instagram, Wrench, Calculator } from 'lucide-react';
+import LogoutButton from './LogoutButton';
 
 // X (Twitter) Icon Component
 const XIcon = ({ className }) => (
@@ -74,7 +75,7 @@ const Footer = () => {
             </NavLink>
           </div>
 
-          {/* Right - Social + Copyright */}
+          {/* Right - Social + Copyright + Logout */}
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1">
               <SocialIcon href="https://github.com/altafpasha" icon={Github} />
@@ -88,8 +89,9 @@ const Footer = () => {
               </a>
               <SocialIcon href="https://instagram.com/altafpasha_h" icon={Instagram} />
               <SocialIcon href="https://www.linkedin.com/in/altaf-pasha/" icon={Linkedin} />
+              <div className="w-px h-4 bg-white/10 mx-1"></div>
+              <LogoutButton />
             </div>
-            <span className="text-xs text-white/30">©{new Date().getFullYear()}</span>
           </div>
         </div>
       </div>
