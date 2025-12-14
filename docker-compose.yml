@@ -1,7 +1,7 @@
 version: '3'
 services:
   nextjs-app:
-    container_name: kbtool-njs
+    container_name: kbtool-latest
     build:
       context: .
       dockerfile: Dockerfile
